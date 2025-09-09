@@ -82,12 +82,33 @@ public class AsignacionPartidoService {
         }
     }
 
+    public void acceptAssignment(Long asignacionId, String comentarios) {
+        Optional<AsignacionPartido> asignacionOpt = asignacionRepository.findById(asignacionId);
+        if (asignacionOpt.isPresent()) {
+            AsignacionPartido asignacion = asignacionOpt.get();
+            asignacion.setEstado(AsignacionPartido.EstadoAsignacion.ACEPTADA);
+            asignacion.setFechaRespuesta(LocalDateTime.now());
+            asignacion.setComentarios(comentarios);
+            asignacionRepository.save(asignacion);
+        }
+    }
+
     public void rejectAssignment(Long asignacionId) {
         Optional<AsignacionPartido> asignacionOpt = asignacionRepository.findById(asignacionId);
         if (asignacionOpt.isPresent()) {
             AsignacionPartido asignacion = asignacionOpt.get();
             asignacion.setEstado(AsignacionPartido.EstadoAsignacion.RECHAZADA);
             asignacion.setFechaRespuesta(LocalDateTime.now());
+            asignacionRepository.save(asignacion);
+        }
+    }
+    public void rejectAssignment(Long asignacionId, String comentarios) {
+        Optional<AsignacionPartido> asignacionOpt = asignacionRepository.findById(asignacionId);
+        if (asignacionOpt.isPresent()) {
+            AsignacionPartido asignacion = asignacionOpt.get();
+            asignacion.setEstado(AsignacionPartido.EstadoAsignacion.RECHAZADA);
+            asignacion.setFechaRespuesta(LocalDateTime.now());
+            asignacion.setComentarios(comentarios);
             asignacionRepository.save(asignacion);
         }
     }

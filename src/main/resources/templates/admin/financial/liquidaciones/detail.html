@@ -67,15 +67,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr th:each="rol, iterStat : ${liquidacion.partidosPorRol}">
-                <td th:text="${rol}">Rol</td>
-                <td th:text="${liquidacion.partidosPorRol[rol]}">0</td>
-                <td
-                  th:text="${#numbers.formatDecimal(liquidacion.montosPorRol[rol], 0, 'COMMA', 2, 'POINT')}"
-                >
-                  0.00
-                </td>
-              </tr>
+              <tr th:each="entry : ${liquidacion.partidosPorRol}">
+                <td th:text="${entry.key}">Rol</td>
+                <td th:text="${entry.value}">0</td>
+                <td th:text="${#numbers.formatDecimal(liquidacion.montosPorRol[entry.key], 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                </tr>
             </tbody>
           </table>
         </div>
