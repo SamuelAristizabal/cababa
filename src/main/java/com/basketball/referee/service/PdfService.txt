@@ -1,0 +1,138 @@
+package com.basketball.referee.service;
+
+import com.basketball.referee.entity.Arbitro;
+import com.basketball.referee.entity.AsignacionPartido;
+import com.basketball.referee.service.LiquidacionService.LiquidacionData;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+@Service
+public class PdfService {
+
+    @Autowired
+    private ArbitroService arbitroService;
+
+    public byte[] generateLiquidacionPdf(LiquidacionData liquidacion) throws DocumentException, IOException {
+        Document document = new Document(PageSize.A4);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PdfWriter writer = PdfWriter.getInstance(document, baos);
+
+        document.open();
+
+        // Get arbitro information
+        Arbitro arbitro = arbitroService.findById(liquidacion.getArbitroId()).orElse(null);
+        if (arbitro == null) {
+            throw new RuntimeException("Árbitro no encontrado");
+        }
+
+        // Fonts
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.BLACK);
+        Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+
+        // Title
+        Paragraph title = new Paragraph("LIQUIDACIÓN DE PAGOS", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(20);
+        document.add(title);
+
+        // Arbitro information
+        PdfPTable infoTable = new PdfPTable(2);
+        infoTable.setWidthPercentage(100);
+        infoTable.setSpacingAfter(20);
+
+        addCell(infoTable, "Árbitro:", headerFont);
+        addCell(infoTable, arbitro.getUser().getFullName(), normalFont);
+        
+        addCell(infoTable, "Escalafón:", headerFont);
+        addCell(infoTable, arbitro.getEscalafon().getDisplayName(), normalFont);
+        
+        addCell(infoTable, "Especialidad:", headerFont);
+        addCell(infoTable, arbitro.getEspecialidad().getDisplayName(), normalFont);
+        
+        addCell(infoTable, "Período:", headerFont);
+        addCell(infoTable, liquidacion.getYearMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")), normalFont);
+
+        document.add(infoTable);
+
+        // Summary by role
+        Paragraph summaryTitle = new Paragraph("RESUMEN POR ROL", headerFont);
+        summaryTitle.setSpacingAfter(10);
+        document.add(summaryTitle);
+
+        PdfPTable summaryTable = new PdfPTable(3);
+        summaryTable.setWidthPercentage(100);
+        summaryTable.setSpacingAfter(20);
+
+        // Headers
+        addCell(summaryTable, "Rol", headerFont);
+        addCell(summaryTable, "Partidos", headerFont);
+        addCell(summaryTable, "Monto", headerFont);
+
+        for (Map.Entry<String, Integer> entry : liquidacion.getPartidosPorRol().entrySet()) {
+            String rol = entry.getKey();
+            Integer partidos = entry.getValue();
+            BigDecimal monto = liquidacion.getMontosPorRol().getOrDefault(rol, BigDecimal.ZERO);
+
+            addCell(summaryTable, rol, normalFont);
+            addCell(summaryTable, partidos.toString(), normalFont);
+            addCell(summaryTable, "$" + monto.toString(), normalFont);
+        }
+
+        document.add(summaryTable);
+
+        // Detailed assignments
+        Paragraph detailTitle = new Paragraph("DETALLE DE PARTIDOS", headerFont);
+        detailTitle.setSpacingAfter(10);
+        document.add(detailTitle);
+
+        PdfPTable detailTable = new PdfPTable(5);
+        detailTable.setWidthPercentage(100);
+        detailTable.setSpacingAfter(20);
+
+        // Headers
+        addCell(detailTable, "Fecha", headerFont);
+        addCell(detailTable, "Partido", headerFont);
+        addCell(detailTable, "Torneo", headerFont);
+        addCell(detailTable, "Rol", headerFont);
+        addCell(detailTable, "Monto", headerFont);
+
+        for (AsignacionPartido asignacion : liquidacion.getAsignaciones()) {
+            BigDecimal payment = tarifaService.calculatePayment(asignacion);
+            
+            addCell(detailTable, asignacion.getPartido().getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+            addCell(detailTable, asignacion.getPartido().getEquipoLocal() + " vs " + asignacion.getPartido().getEquipoVisitante(), normalFont);
+            addCell(detailTable, asignacion.getPartido().getTorneo().getNombre(), normalFont);
+            addCell(detailTable, asignacion.getRol().getDisplayName(), normalFont);
+            addCell(detailTable, "$" + payment.toString(), normalFont);
+        }
+
+        document.add(detailTable);
+
+        // Total
+        Paragraph total = new Paragraph("TOTAL A PAGAR: $" + liquidacion.getTotalAmount().toString(), titleFont);
+        total.setAlignment(Element.ALIGN_RIGHT);
+        total.setSpacingBefore(20);
+        document.add(total);
+
+        document.close();
+        return baos.toByteArray();
+    }
+
+    @Autowired
+    private TarifaService tarifaService;
+
+    private void addCell(PdfPTable table, String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setPadding(8);
+        table.addCell(cell);
+    }
+}

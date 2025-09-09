@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Gestión de Árbitros</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Gestión de Árbitros</h1>
+                            <p class="text-muted mb-0">Administrar árbitros del sistema</p>
+                        </div>
+                        <a th:href="@{/admin/arbitros/new}" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>Nuevo Árbitro
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/arbitros}" method="get" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="search" class="form-label">Buscar</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           th:value="${param.search}" placeholder="Nombre o email">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="escalafon" class="form-label">Escalafón</label>
+                                    <select class="form-select" id="escalafon" name="escalafon">
+                                        <option value="">Todos</option>
+                                        <option th:each="escalafon : ${T(com.basketball.referee.entity.Arbitro.Escalafon).values()}"
+                                                th:value="${escalafon}"
+                                                th:text="${escalafon.displayName}"
+                                                th:selected="${param.escalafon == escalafon.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="especialidad" class="form-label">Especialidad</label>
+                                    <select class="form-select" id="especialidad" name="especialidad">
+                                        <option value="">Todas</option>
+                                        <option th:each="especialidad : ${T(com.basketball.referee.entity.Arbitro.Especialidad).values()}"
+                                                th:value="${especialidad}"
+                                                th:text="${especialidad.displayName}"
+                                                th:selected="${param.especialidad == especialidad.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="activo" class="form-label">Estado</label>
+                                    <select class="form-select" id="activo" name="activo">
+                                        <option value="">Todos</option>
+                                        <option value="true" th:selected="${param.activo == 'true'}">Activos</option>
+                                        <option value="false" th:selected="${param.activo == 'false'}">Inactivos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-search me-1"></i>Buscar
+                                    </button>
+                                    <a th:href="@{/admin/arbitros}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arbitros Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(arbitros)}" class="text-center py-5">
+                                <i class="fas fa-users text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted mt-3">No se encontraron árbitros</h5>
+                                <p class="text-muted">No hay árbitros que coincidan con los criterios de búsqueda.</p>
+                            </div>
+
+                            <div th:if="${!#lists.isEmpty(arbitros)}" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Foto</th>
+                                            <th>Nombre</th>
+                                            <th>Email</th>
+                                            <th>Escalafón</th>
+                                            <th>Especialidad</th>
+                                            <th>Estado</th>
+                                            <th>Partidos</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="arbitro : ${arbitros}">
+                                            <td>
+                                                <img th:src="${arbitro.fotoUrl != null ? arbitro.fotoUrl : '/images/default-avatar.png'}" 
+                                                     alt="Avatar" 
+                                                     class="profile-image-small">
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold" th:text="${arbitro.user.fullName}">Nombre</div>
+                                                <div class="text-muted small" th:text="${arbitro.telefono}">Teléfono</div>
+                                            </td>
+                                            <td th:text="${arbitro.user.email}">email@example.com</td>
+                                            <td>
+                                                <span class="badge bg-info" th:text="${arbitro.escalafon.displayName}">Escalafón</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary" th:text="${arbitro.especialidad.displayName}">Especialidad</span>
+                                            </td>
+                                            <td>
+                                                <span th:class="'badge ' + (${arbitro.activo} ? 'bg-success' : 'bg-danger')"
+                                                      th:text="${arbitro.activo} ? 'Activo' : 'Inactivo'">
+                                                    Estado
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/arbitros/{id}(id=${arbitro.id})}" 
+                                                       class="btn btn-sm btn-outline-info" title="Ver">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/arbitros/{id}/edit(id=${arbitro.id})}" 
+                                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-warning" 
+                                                            th:onclick="'toggleStatus(' + ${arbitro.id} + ')'"
+                                                            th:title="${arbitro.activo} ? 'Desactivar' : 'Activar'">
+                                                        <i th:class="'fas ' + (${arbitro.activo} ? 'fa-ban' : 'fa-check')"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        function toggleStatus(arbitroId) {
+            if (confirm('¿Está seguro de cambiar el estado de este árbitro?')) {
+                fetch(`/admin/arbitros/${arbitroId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al cambiar el estado del árbitro');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cambiar el estado del árbitro');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

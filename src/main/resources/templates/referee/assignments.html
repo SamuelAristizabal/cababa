@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Mis Asignaciones</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Mis Asignaciones</h1>
+                            <p class="text-muted mb-0">Gestiona tus asignaciones de partidos</p>
+                        </div>
+                        <a th:href="@{/referee/dashboard}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-4" id="assignmentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                        <i class="fas fa-clock me-2"></i>Pendientes 
+                        <span class="badge bg-warning ms-1" th:text="${#lists.size(pendingAssignments)}">0</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="accepted-tab" data-bs-toggle="tab" data-bs-target="#accepted" type="button" role="tab">
+                        <i class="fas fa-check-circle me-2"></i>Aceptadas 
+                        <span class="badge bg-success ms-1" th:text="${#lists.size(acceptedAssignments)}">0</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+                        <i class="fas fa-flag-checkered me-2"></i>Completadas 
+                        <span class="badge bg-info ms-1" th:text="${#lists.size(completedAssignments)}">0</span>
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="assignmentTabsContent">
+                <!-- Pending Assignments -->
+                <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                    <div th:if="${#lists.isEmpty(pendingAssignments)}" class="text-center py-5">
+                        <i class="fas fa-inbox text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">No tienes asignaciones pendientes</h4>
+                        <p class="text-muted">Las nuevas asignaciones aparecerán aquí</p>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(pendingAssignments)}" class="row">
+                        <div th:each="asignacion : ${pendingAssignments}" class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-warning text-dark">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold">Pendiente</span>
+                                        <span class="badge bg-dark" th:text="${asignacion.rol.displayName}">Rol</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title" th:text="${asignacion.partido.partidoDescripcion}">Partido</h6>
+                                    <p class="card-text">
+                                        <i class="fas fa-calendar me-2"></i>
+                                        <span th:text="${#temporals.format(asignacion.partido.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                    </p>
+                                    <p class="card-text">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <span th:text="${asignacion.partido.cancha.nombre}">Cancha</span>
+                                    </p>
+                                    <p class="card-text">
+                                        <i class="fas fa-trophy me-2"></i>
+                                        <span th:text="${asignacion.partido.torneo.nombre}">Torneo</span>
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                th:data-bs-target="'#acceptModal' + ${asignacion.id}">
+                                            <i class="fas fa-check me-2"></i>Aceptar
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                th:data-bs-target="'#rejectModal' + ${asignacion.id}">
+                                            <i class="fas fa-times me-2"></i>Rechazar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accept Modal -->
+                            <div class="modal fade" th:id="'acceptModal' + ${asignacion.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Aceptar Asignación</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form th:action="@{'/referee/assignments/' + ${asignacion.id} + '/accept'}" method="post">
+                                            <div class="modal-body">
+                                                <p>¿Estás seguro de que quieres aceptar esta asignación?</p>
+                                                <div class="mb-3">
+                                                    <label for="comentarios" class="form-label">Comentarios (opcional):</label>
+                                                    <textarea class="form-control" name="comentarios" rows="3" 
+                                                              placeholder="Agrega cualquier comentario..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="fas fa-check me-2"></i>Aceptar
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reject Modal -->
+                            <div class="modal fade" th:id="'rejectModal' + ${asignacion.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Rechazar Asignación</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form th:action="@{'/referee/assignments/' + ${asignacion.id} + '/reject'}" method="post">
+                                            <div class="modal-body">
+                                                <p>¿Estás seguro de que quieres rechazar esta asignación?</p>
+                                                <div class="mb-3">
+                                                    <label for="comentarios" class="form-label">Motivo del rechazo:</label>
+                                                    <textarea class="form-control" name="comentarios" rows="3" 
+                                                              placeholder="Explica el motivo del rechazo..." required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-times me-2"></i>Rechazar
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accepted Assignments -->
+                <div class="tab-pane fade" id="accepted" role="tabpanel">
+                    <div th:if="${#lists.isEmpty(acceptedAssignments)}" class="text-center py-5">
+                        <i class="fas fa-check-circle text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">No tienes asignaciones aceptadas</h4>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(acceptedAssignments)}" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Partido</th>
+                                    <th>Fecha y Hora</th>
+                                    <th>Cancha</th>
+                                    <th>Rol</th>
+                                    <th>Torneo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="asignacion : ${acceptedAssignments}">
+                                    <td th:text="${asignacion.partido.partidoDescripcion}">Partido</td>
+                                    <td th:text="${#temporals.format(asignacion.partido.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                                    <td th:text="${asignacion.partido.cancha.nombre}">Cancha</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${asignacion.rol.displayName}">Rol</span>
+                                    </td>
+                                    <td th:text="${asignacion.partido.torneo.nombre}">Torneo</td>
+                                    <td>
+                                        <span class="badge bg-success">Aceptada</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Completed Assignments -->
+                <div class="tab-pane fade" id="completed" role="tabpanel">
+                    <div th:if="${#lists.isEmpty(completedAssignments)}" class="text-center py-5">
+                        <i class="fas fa-flag-checkered text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">No tienes asignaciones completadas</h4>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(completedAssignments)}" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-info">
+                                <tr>
+                                    <th>Partido</th>
+                                    <th>Fecha y Hora</th>
+                                    <th>Cancha</th>
+                                    <th>Rol</th>
+                                    <th>Resultado</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="asignacion : ${completedAssignments}">
+                                    <td th:text="${asignacion.partido.partidoDescripcion}">Partido</td>
+                                    <td th:text="${#temporals.format(asignacion.partido.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                                    <td th:text="${asignacion.partido.cancha.nombre}">Cancha</td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${asignacion.rol.displayName}">Rol</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${asignacion.partido.resultadoLocal != null and asignacion.partido.resultadoVisitante != null}"
+                                              th:text="${asignacion.partido.resultadoLocal} + ' - ' + ${asignacion.partido.resultadoVisitante}">
+                                            Resultado
+                                        </span>
+                                        <span th:if="${asignacion.partido.resultadoLocal == null or asignacion.partido.resultadoVisitante == null}"
+                                              class="text-muted">
+                                            Sin resultado
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">Completada</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

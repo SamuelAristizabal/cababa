@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/base}"
+>
+  <head>
+    <title th:text="${title}">Liquidaciones</title>
+  </head>
+  <body>
+    <div layout:fragment="content" class="container-fluid">
+      <h1 class="h3 mb-4" th:text="${title}">Liquidaciones</h1>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Documento</th>
+                <th>Escalafón</th>
+                <th>Especialidad</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="arbitro : ${arbitros}">
+                <td th:text="${arbitro.user.fullName}">Nombre árbitro</td>
+                <td th:text="${arbitro.documento}">Documento</td>
+                <td th:text="${arbitro.escalafon.displayName}">Escalafón</td>
+                <td th:text="${arbitro.especialidad.displayName}">
+                  Especialidad
+                </td>
+                <td>
+                  <a
+                    th:href="@{/admin/financial/liquidaciones/arbitro/{id}(id=${arbitro.id})}"
+                    class="btn btn-sm btn-primary"
+                  >
+                    Ver Liquidación
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

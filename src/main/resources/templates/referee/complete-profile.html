@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Completar Perfil</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-user-plus me-2"></i>Completar Perfil de Árbitro
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Para acceder al sistema, necesitas completar tu perfil de árbitro con la siguiente información.
+                            </div>
+
+                            <form th:action="@{/referee/complete-profile}" th:object="${arbitro}" method="post" class="needs-validation" novalidate>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="documento" class="form-label">Documento de Identidad *</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="documento" 
+                                               th:field="*{documento}"
+                                               placeholder="Ej: 12345678"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Por favor ingrese su documento.
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('documento')}" class="text-danger">
+                                            <small th:errors="*{documento}"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="telefono" class="form-label">Teléfono *</label>
+                                        <input type="tel" 
+                                               class="form-control" 
+                                               id="telefono" 
+                                               th:field="*{telefono}"
+                                               placeholder="Ej: +57 300 123 4567"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Por favor ingrese su teléfono.
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('telefono')}" class="text-danger">
+                                            <small th:errors="*{telefono}"></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="direccion" class="form-label">Dirección</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="direccion" 
+                                           th:field="*{direccion}"
+                                           placeholder="Ingrese su dirección">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento *</label>
+                                        <input type="date" 
+                                               class="form-control" 
+                                               id="fechaNacimiento" 
+                                               th:field="*{fechaNacimiento}"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Por favor ingrese su fecha de nacimiento.
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('fechaNacimiento')}" class="text-danger">
+                                            <small th:errors="*{fechaNacimiento}"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="especialidad" class="form-label">Especialidad *</label>
+                                        <select class="form-select" 
+                                                id="especialidad" 
+                                                th:field="*{especialidad}"
+                                                required>
+                                            <option value="">Seleccione especialidad</option>
+                                            <option th:each="esp : ${especialidades}" 
+                                                    th:value="${esp}" 
+                                                    th:text="${esp.displayName}">
+                                                Especialidad
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor seleccione una especialidad.
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('especialidad')}" class="text-danger">
+                                            <small th:errors="*{especialidad}"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="escalafon" class="form-label">Escalafón *</label>
+                                        <select class="form-select" 
+                                                id="escalafon" 
+                                                th:field="*{escalafon}"
+                                                required>
+                                            <option value="">Seleccione escalafón</option>
+                                            <option th:each="esc : ${escalafones}" 
+                                                    th:value="${esc}" 
+                                                    th:text="${esc.displayName}">
+                                                Escalafón
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Por favor seleccione un escalafón.
+                                        </div>
+                                        <div th:if="${#fields.hasErrors('escalafon')}" class="text-danger">
+                                            <small th:errors="*{escalafon}"></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="observaciones" class="form-label">Observaciones</label>
+                                    <textarea class="form-control" 
+                                              id="observaciones" 
+                                              th:field="*{observaciones}"
+                                              rows="3"
+                                              placeholder="Información adicional (opcional)"></textarea>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save me-2"></i>Completar Perfil
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

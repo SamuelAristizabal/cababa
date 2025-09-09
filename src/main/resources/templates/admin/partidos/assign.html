@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Asignar Árbitros</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Asignar Árbitros</h1>
+                            <p class="text-muted mb-0">
+                                <span th:text="${partido.equipoLocal} + ' vs ' + ${partido.equipoVisitante}">Partido</span> - 
+                                <span th:text="${#temporals.format(partido.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                            </p>
+                        </div>
+                        <a th:href="@{/admin/partidos/{id}(id=${partido.id})}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Assignments -->
+            <div th:if="${!#lists.isEmpty(asignacionesExistentes)}" class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Asignaciones Actuales
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div th:each="asignacion : ${asignacionesExistentes}" class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center p-3 border rounded">
+                                        <img th:src="${asignacion.arbitro.fotoUrl != null ? asignacion.arbitro.fotoUrl : '/images/default-avatar.png'}" 
+                                             alt="Avatar" class="profile-image-small me-3">
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold" th:text="${asignacion.arbitro.user.fullName}">Nombre</div>
+                                            <div class="text-muted small">
+                                                <span th:text="${asignacion.rol.displayName}">Rol</span> - 
+                                                <span th:class="'badge ' + (${asignacion.estado.name() == 'ACEPTADA'} ? 'bg-success' : 
+                                                                           ${asignacion.estado.name() == 'RECHAZADA'} ? 'bg-danger' : 'bg-warning')"
+                                                      th:text="${asignacion.estado.displayName}">Estado</span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                th:onclick="'removeAssignment(' + ${asignacion.id} + ')'">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Form -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user-plus me-2"></i>Asignar Nuevos Árbitros
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/partidos/{id}/assign(id=${partido.id})}" method="post" id="assignmentForm">
+                                
+                                <!-- Campo Referees -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h6 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-whistle me-2"></i>Árbitros de Campo
+                                        </h6>
+                                    </div>
+                                    
+                                    <!-- Primer Árbitro -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Primer Árbitro</label>
+                                        <select class="form-select" name="arbitroIds">
+                                            <option value="">Seleccionar árbitro</option>
+                                            <option th:each="arbitro : ${arbitrosCampo}"
+                                                    th:value="${arbitro.id}"
+                                                    th:text="${arbitro.user.fullName} + ' (' + ${arbitro.escalafon.displayName} + ')'">
+                                            </option>
+                                        </select>
+                                        <input type="hidden" name="roles" value="PRIMER_ARBITRO"/>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Segundo Árbitro</label>
+                                        <select class="form-select" name="arbitroIds">
+                                            <option value="">Seleccionar árbitro</option>
+                                            <option th:each="arbitro : ${arbitrosCampo}"
+                                                    th:value="${arbitro.id}"
+                                                    th:text="${arbitro.user.fullName} + ' (' + ${arbitro.escalafon.displayName} + ')'">
+                                            </option>
+                                        </select>
+                                        <input type="hidden" name="roles" value="SEGUNDO_ARBITRO"/>
+                                    </div>
+                                </div>
+
+                                <!-- Mesa Referees -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h6 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-table me-2"></i>Árbitros de Mesa
+                                        </h6>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Anotador</label>
+                                        <select class="form-select" name="arbitroIds">
+                                            <option value="">Seleccionar árbitro</option>
+                                            <option th:each="arbitro : ${arbitrosMesa}"
+                                                    th:value="${arbitro.id}"
+                                                    th:text="${arbitro.user.fullName} + ' (' + ${arbitro.escalafon.displayName} + ')'">
+                                            </option>
+                                        </select>
+                                        <input type="hidden" name="roles" value="ANOTADOR"/>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Cronometrista</label>
+                                        <select class="form-select" name="arbitroIds">
+                                            <option value="">Seleccionar árbitro</option>
+                                            <option th:each="arbitro : ${arbitrosMesa}"
+                                                    th:value="${arbitro.id}"
+                                                    th:text="${arbitro.user.fullName} + ' (' + ${arbitro.escalafon.displayName} + ')'">
+                                            </option>
+                                        </select>
+                                        <input type="hidden" name="roles" value="ANOTADOR"/>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Operador 24 seg</label>
+                                        <select class="form-select" name="arbitroIds">
+                                            <option value="">Seleccionar árbitro</option>
+                                            <option th:each="arbitro : ${arbitrosMesa}"
+                                                    th:value="${arbitro.id}"
+                                                    th:text="${arbitro.user.fullName} + ' (' + ${arbitro.escalafon.displayName} + ')'">
+                                            </option>
+                                        </select>
+                                        <input type="hidden" name="roles" value="ANOTADOR"/>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a th:href="@{/admin/partidos/{id}(id=${partido.id})}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times me-2"></i>Cancelar
+                                            </a>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-user-plus me-2"></i>Asignar Árbitros
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

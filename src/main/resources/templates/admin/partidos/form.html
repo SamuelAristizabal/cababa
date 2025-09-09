@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${partido.id != null ? 'Editar Partido' : 'Programar Partido'}">Partido</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0" th:text="${partido.id != null ? 'Editar Partido' : 'Programar Partido'}">Partido</h1>
+                            <p class="text-muted mb-0">Complete la información del partido</p>
+                        </div>
+                        <a th:href="@{/admin/partidos}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${errorMessages != null}">
+                <ul class="alert alert-danger">
+                    <li th:each="err : ${errorMessages}" th:text="${err}"></li>
+                </ul>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/partidos}" th:object="${partido}" method="post">
+                                <input type="hidden" th:field="*{id}">
+
+                                <!-- Match Information -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-basketball-ball me-2"></i>Información del Partido
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="torneo" class="form-label">Torneo *</label>
+                                        <select class="form-select" id="torneo" th:field="*{torneo}" required>
+                                            <option value="">Seleccione un torneo</option>
+                                            <option th:each="torneo : ${torneos}"
+                                                    th:value="${torneo.id}"
+                                                    th:text="${torneo.nombre}">
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('torneo')}" 
+                                             th:errors="*{torneo}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cancha" class="form-label">Cancha *</label>
+                                        <select class="form-select" id="cancha" th:field="*{cancha}" required>
+                                            <option value="">Seleccione una cancha</option>
+                                            <option th:each="cancha : ${canchas}"
+                                                    th:value="${cancha.id}"
+                                                    th:text="${cancha.nombre} + ' - ' + ${cancha.direccion}">
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('cancha')}" 
+                                             th:errors="*{cancha}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Teams -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-users me-2"></i>Equipos
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="equipoLocal" class="form-label">Equipo Local *</label>
+                                        <input type="text" class="form-control" id="equipoLocal" 
+                                               th:field="*{equipoLocal}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('equipoLocal')}" 
+                                             th:errors="*{equipoLocal}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="equipoVisitante" class="form-label">Equipo Visitante *</label>
+                                        <input type="text" class="form-control" id="equipoVisitante" 
+                                               th:field="*{equipoVisitante}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('equipoVisitante')}" 
+                                             th:errors="*{equipoVisitante}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Date and Time -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="fechaHora" class="form-label">Fecha y Hora *</label>
+                                        <input type="datetime-local" class="form-control" id="fechaHora"
+                                            th:field="*{fechaHora}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fechaHora')}"
+                                            th:errors="*{fechaHora}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Information -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Información Adicional
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-12 mb-3">
+                                        <label for="observaciones" class="form-label">Observaciones</label>
+                                        <textarea class="form-control" id="observaciones" rows="3"
+                                                  th:field="*{observaciones}" 
+                                                  placeholder="Observaciones especiales, instrucciones, etc."></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a th:href="@{/admin/partidos}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times me-2"></i>Cancelar
+                                            </a>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-save me-2"></i>
+                                                <span th:text="${partido.id != null ? 'Actualizar' : 'Programar'} + ' Partido'">Guardar</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        // Set minimum date to today
+        document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
+        
+        // Validate that the match is scheduled for future
+        document.getElementById('fecha').addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                alert('No se puede programar un partido en el pasado');
+                this.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/base}"
+>
+  <head>
+    <title th:text="${title}">Detalle Liquidación</title>
+  </head>
+  <body>
+    <div layout:fragment="content" class="container-fluid">
+      <h1 class="h3 mb-4" th:text="${title}">Detalle de Liquidación</h1>
+
+      <!-- Info del árbitro -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 th:text="${arbitro.user.fullName}">Nombre árbitro</h5>
+          <p class="mb-1">
+            <strong>Documento:</strong>
+            <span th:text="${arbitro.documento}"></span>
+          </p>
+          <p class="mb-1">
+            <strong>Escalafón:</strong>
+            <span th:text="${arbitro.escalafon.displayName}"></span>
+          </p>
+          <p class="mb-0">
+            <strong>Periodo:</strong> <span th:text="${yearMonth}"></span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Resumen -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card text-center shadow-sm">
+            <div class="card-body">
+              <h6>Total Partidos</h6>
+              <h3 th:text="${liquidacion.totalPartidos}">0</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-center shadow-sm">
+            <div class="card-body">
+              <h6>Monto Total</h6>
+              <h3
+                th:text="${#numbers.formatDecimal(liquidacion.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+              ></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desglose por rol -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Resumen por Rol</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered text-center">
+            <thead>
+              <tr>
+                <th>Rol</th>
+                <th>Partidos</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="rol, iterStat : ${liquidacion.partidosPorRol}">
+                <td th:text="${rol}">Rol</td>
+                <td th:text="${liquidacion.partidosPorRol[rol]}">0</td>
+                <td
+                  th:text="${#numbers.formatDecimal(liquidacion.montosPorRol[rol], 0, 'COMMA', 2, 'POINT')}"
+                >
+                  0.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detalle de asignaciones -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Partidos Completados</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Torneo</th>
+                <th>Rol</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="a : ${liquidacion.asignaciones}">
+                <td th:text="${a.partido.fechaHora}">2025-09-08</td>
+                <td th:text="${a.partido.torneo.nombre}">Torneo X</td>
+                <td th:text="${a.rol.displayName}">Juez</td>
+                <td
+                  th:text="${#numbers.formatDecimal(@tarifaService.calculatePayment(a), 0, 'COMMA', 2, 'POINT')}"
+                >
+                  0.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <a
+          th:href="@{/admin/financial/liquidaciones}"
+          class="btn btn-outline-secondary"
+          >Volver</a
+        >
+      </div>
+    </div>
+  </body>
+</html>

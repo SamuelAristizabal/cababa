@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Gestión de Torneos</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Gestión de Torneos</h1>
+                            <p class="text-muted mb-0">Administrar torneos del sistema</p>
+                        </div>
+                        <a th:href="@{/admin/torneos/new}" class="btn btn-success">
+                            <i class="fas fa-trophy me-2"></i>Nuevo Torneo
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/torneos}" method="get" class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="search" class="form-label">Buscar</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           th:value="${param.search}" placeholder="Nombre del torneo">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="estado" class="form-label">Estado</label>
+                                    <select class="form-select" id="estado" name="estado">
+                                        <option value="">Todos</option>
+                                        <option th:each="estado : ${T(com.basketball.referee.entity.Torneo.EstadoTorneo).values()}"
+                                                th:value="${estado}"
+                                                th:text="${estado.displayName}"
+                                                th:selected="${param.estado == estado.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="year" class="form-label">Año</label>
+                                    <select class="form-select" id="year" name="year">
+                                        <option value="">Todos</option>
+                                        <option th:each="year : ${years}" 
+                                                th:value="${year}" 
+                                                th:text="${year}"
+                                                th:selected="${param.year == year.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-search me-1"></i>Buscar
+                                    </button>
+                                    <a th:href="@{/admin/torneos}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Torneos Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(torneos)}" class="text-center py-5">
+                                <i class="fas fa-trophy text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted mt-3">No se encontraron torneos</h5>
+                                <p class="text-muted">No hay torneos que coincidan con los criterios de búsqueda.</p>
+                            </div>
+
+                            <div th:if="${!#lists.isEmpty(torneos)}" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Fechas</th>
+                                            <th>Estado</th>
+                                            <th>Partidos</th>
+                                            <th>Descripción</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="torneo : ${torneos}">
+                                            <td>
+                                                <div class="fw-bold" th:text="${torneo.nombre}">Nombre</div>
+                                                <div class="text-muted small">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    Creado: <span th:text="${#temporals.format(torneo.createdAt, 'dd/MM/yyyy')}">Fecha</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="small">
+                                                    <div><strong>Inicio:</strong> <span th:text="${#temporals.format(torneo.fechaInicio, 'dd/MM/yyyy')}">Inicio</span></div>
+                                                    <div><strong>Fin:</strong> <span th:text="${#temporals.format(torneo.fechaFin, 'dd/MM/yyyy')}">Fin</span></div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span th:class="'badge ' + ${torneo.estado.name() == 'ACTIVO' ? 'bg-success' : 
+                                                                           torneo.estado.name() == 'PROGRAMADO' ? 'bg-info' : 
+                                                                           torneo.estado.name() == 'FINALIZADO' ? 'bg-secondary' : 'bg-danger'}"
+                                                      th:text="${torneo.estado.displayName}">
+                                                    Estado
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary" th:text="${#lists.size(torneo.partidos)}">0</span>
+                                            </td>
+                                            <td>
+                                                <span th:text="${#strings.abbreviate(torneo.descripcion, 50)}" 
+                                                      th:title="${torneo.descripcion}">Descripción</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/torneos/{id}(id=${torneo.id})}" 
+                                                       class="btn btn-sm btn-outline-info" title="Ver">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/torneos/{id}/edit(id=${torneo.id})}" 
+                                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger" 
+                                                            th:onclick="'deleteTorneo(' + ${torneo.id} + ')'"
+                                                            title="Eliminar">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        function deleteTorneo(torneoId) {
+            if (confirm('¿Está seguro de eliminar este torneo? Esta acción no se puede deshacer.')) {
+                fetch(`/admin/torneos/${torneoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar el torneo');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al eliminar el torneo');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

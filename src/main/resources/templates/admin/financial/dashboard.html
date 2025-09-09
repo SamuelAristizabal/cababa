@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/base}"
+>
+  <head>
+    <title th:text="${title}">Dashboard Financiero</title>
+  </head>
+  <body>
+    <div layout:fragment="content">
+      <div class="container-fluid">
+        <div class="row mb-4">
+          <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">Dashboard Financiero</h1>
+            <a th:href="@{/admin}" class="btn btn-outline-primary">
+              <i class="fas fa-arrow-left me-2"></i>Volver al Admin
+            </a>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+              <div class="card-body text-center">
+                <h5 class="card-title">Gestión de Tarifas</h5>
+                <p class="text-muted">Crea, edita y administra tarifas</p>
+                <a th:href="@{/admin/financial/tarifas}" class="btn btn-primary"
+                  >Ir a Tarifas</a
+                >
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+              <div class="card-body text-center">
+                <h5 class="card-title">Liquidaciones</h5>
+                <p class="text-muted">Calcula liquidaciones por árbitro</p>
+                <a
+                  th:href="@{/admin/financial/liquidaciones}"
+                  class="btn btn-primary"
+                  >Ir a Liquidaciones</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
