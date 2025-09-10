@@ -18,10 +18,6 @@ public class Grade {
     @JoinColumn(name = "referee_id", nullable = false)
     private Referee referee;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment_id", nullable = false)
-    private MatchAssignment assignment;
-    
     @NotNull(message = "La puntuación es obligatoria")
     @Min(value = 1, message = "La puntuación mínima es 1")
     @Max(value = 5, message = "La puntuación máxima es 5")
@@ -54,9 +50,8 @@ public class Grade {
     // Constructors
     public Grade() {}
     
-    public Grade(Referee referee, MatchAssignment assignment, Integer score) {
+    public Grade(Referee referee, Integer score) {
         this.referee = referee;
-        this.assignment = assignment;
         this.score = score;
     }
     
@@ -76,15 +71,7 @@ public class Grade {
     public void setReferee(Referee referee) {
         this.referee = referee;
     }
-    
-    public MatchAssignment getAssignment() {
-        return assignment;
-    }
-    
-    public void setAssignment(MatchAssignment assignment) {
-        this.assignment = assignment;
-    }
-    
+
     public Integer getScore() {
         return score;
     }

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${title}">Calificar Árbitro</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h1 th:text="${title}">Calificar Árbitro</h1>
+
+        <form th:action="@{/admin/referees/{refereeId}/grade(refereeId=${referee.id})}"
+              th:object="${grade}" method="post">
+
+            <input type="hidden" th:field="*{referee.id}">
+
+            <div class="mb-3">
+                <label class="form-label">Árbitro</label>
+                <input type="text" th:value="${referee.user.fullName}" class="form-control" disabled>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Puntuación (1-5)</label>
+                <input type="number" min="1" max="5" class="form-control" th:field="*{score}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Comentarios</label>
+                <textarea class="form-control" th:field="*{comments}" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Evaluado por</label>
+                <input type="text" class="form-control" th:field="*{evaluatedBy}">
+            </div>
+
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <a th:href="@{/admin/referees}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+</body>
+</html>

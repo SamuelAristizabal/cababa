@@ -1,5 +1,6 @@
 package com.basketball.referee.service;
 
+import com.basketball.referee.model.Grade;
 import com.basketball.referee.model.Referee;
 import com.basketball.referee.model.User;
 import com.basketball.referee.service.UserService;
@@ -56,11 +57,10 @@ public class RefereeService {
 
     public List<Referee> findByFilters(String search, String rank, String specialty, String active) {
         return refereeRepository.findByFilters(
-            (search != null && !search.trim().isEmpty()) ? search : null,
-            (rank != null && !rank.trim().isEmpty()) ? rank : null,
-            (specialty != null && !specialty.trim().isEmpty()) ? specialty : null,
-            (active != null && !active.trim().isEmpty()) ? Boolean.parseBoolean(active) : null
-        );
+                (search != null && !search.trim().isEmpty()) ? search : null,
+                (rank != null && !rank.trim().isEmpty()) ? rank : null,
+                (specialty != null && !specialty.trim().isEmpty()) ? specialty : null,
+                (active != null && !active.trim().isEmpty()) ? Boolean.parseBoolean(active) : null);
     }
 
     public List<Referee> findBySpecialty(Referee.Specialty specialty) {
@@ -73,6 +73,17 @@ public class RefereeService {
 
     public List<Referee> findMostActiveReferees() {
         return refereeRepository.findMostActiveReferees();
+    }
+
+    public List<Referee> findTopRefereesByAverageScore(int limit) {
+        return refereeRepository.findAll().stream()
+                .sorted((r1, r2) -> {
+                    double avg1 = r1.getGrades().stream().mapToInt(Grade::getScore).average().orElse(0);
+                    double avg2 = r2.getGrades().stream().mapToInt(Grade::getScore).average().orElse(0);
+                    return Double.compare(avg2, avg1); // descendente
+                })
+                .limit(limit)
+                .toList();
     }
 
     public Referee save(Referee referee) {

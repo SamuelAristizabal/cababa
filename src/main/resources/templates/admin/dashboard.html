@@ -73,9 +73,7 @@
             <div class="card dashboard-card bg-warning">
               <div class="card-body text-center">
                 <i class="fas fa-basketball-ball card-icon"></i>
-                <div class="card-number" th:text="${matchesProgramados}">
-                  0
-                </div>
+                <div class="card-number" th:text="${matchesProgramados}">0</div>
                 <h6 class="card-title mb-0">Matches Programados</h6>
               </div>
             </div>
@@ -261,7 +259,9 @@
                     class="fas fa-trophy text-muted"
                     style="font-size: 2rem"
                   ></i>
-                  <p class="text-muted mt-2 mb-0">No hay tournaments en curso</p>
+                  <p class="text-muted mt-2 mb-0">
+                    No hay tournaments en curso
+                  </p>
                 </div>
 
                 <div th:if="${!#lists.isEmpty(currentTournaments)}">
@@ -269,7 +269,9 @@
                     th:each="tournament : ${currentTournaments}"
                     class="border-bottom pb-2 mb-3"
                   >
-                    <div class="fw-bold" th:text="${tournament.name}">Tournament</div>
+                    <div class="fw-bold" th:text="${tournament.name}">
+                      Tournament
+                    </div>
                     <div class="text-muted small">
                       <i class="fas fa-calendar me-1"></i>
                       <span
@@ -300,7 +302,7 @@
                 class="card-header d-flex justify-content-between align-items-center"
               >
                 <h5 class="mb-0">
-                  <i class="fas fa-start me-2"></i>Top 5 Árbitros del Mes
+                  <i class="fas fa-star me-2"></i>Top 5 Árbitros del Mes
                 </h5>
               </div>
               <div class="card-body">
@@ -330,7 +332,7 @@
                         <span
                           class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning"
                         >
-                          <span th:text="${iterStat.count}">1</span>
+                          <span th:text="${iterStat.index + 1}">1</span>
                         </span>
                       </div>
                     </div>

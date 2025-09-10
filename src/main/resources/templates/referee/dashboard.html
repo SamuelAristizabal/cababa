@@ -1,204 +1,287 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/base}">
-<head>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/base}"
+>
+  <head>
     <title>Dashboard - Árbitro</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- FontAwesome CSS para íconos -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-</head>
-<body>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <div layout:fragment="content">
-        <div class="container-fluid">
-            <!-- Header -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h1 class="h3 mb-0">Dashboard</h1>
-                            <p class="text-muted mb-0">Bienvenido, <span th:text="${user.fullName}"></span></p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a th:href="@{/referee/profile}" class="btn btn-outline-primary">
-                                <i class="fas fa-user me-2"></i>Mi Perfil
-                            </a>
-                            <a th:href="@{/referee/calendar}" class="btn btn-primary">
-                                <i class="fas fa-calendar me-2"></i>Calendario
-                            </a>
-                        </div>
-                    </div>
-                </div>
+      <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h1 class="h3 mb-0">Dashboard</h1>
+                <p class="text-muted mb-0">
+                  Bienvenido, <span th:text="${user.fullName}"></span>
+                </p>
+              </div>
+              <div class="d-flex gap-2">
+                <a
+                  th:href="@{/referee/profile}"
+                  class="btn btn-outline-primary"
+                >
+                  <i class="fas fa-user me-2"></i>Mi Perfil
+                </a>
+                <a th:href="@{/referee/calendar}" class="btn btn-primary">
+                  <i class="fas fa-calendar me-2"></i>Calendario
+                </a>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-md-3 mb-3">
-                    <div class="card dashboard-card bg-warning">
-                        <div class="card-body text-center">
-                            <i class="fas fa-clock card-icon"></i>
-                            <div class="card-number" th:text="${pendingAssignments}">0</div>
-                            <h6 class="card-title mb-0">Assignments Pendientes</h6>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-3 mb-3">
-                    <div class="card dashboard-card bg-success">
-                        <div class="card-body text-center">
-                            <i class="fas fa-check-circle card-icon"></i>
-                            <div class="card-number" th:text="${acceptedAssignments}">0</div>
-                            <h6 class="card-title mb-0">Assignments Aceptadas</h6>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-3 mb-3">
-                    <div class="card dashboard-card bg-info">
-                        <div class="card-body text-center">
-                            <i class="fas fa-basketball-ball card-icon"></i>
-                            <div class="card-number" th:text="${referee.rank.displayName}">-</div>
-                            <h6 class="card-title mb-0">Escalafón</h6>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-3 mb-3">
-                    <div class="card dashboard-card bg-primary">
-                        <div class="card-body text-center">
-                            <i class="fas fa-medal card-icon"></i>
-                            <div class="card-number" th:text="${referee.specialty.displayName}">-</div>
-                            <h6 class="card-title mb-0">Specialty</h6>
-                        </div>
-                    </div>
-                </div>
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+          <div class="col-md-3 mb-3">
+            <div class="card dashboard-card bg-warning">
+              <div class="card-body text-center">
+                <i class="fas fa-clock card-icon"></i>
+                <div class="card-number" th:text="${pendingAssignments}">0</div>
+                <h6 class="card-title mb-0">Assignments Pendientes</h6>
+              </div>
             </div>
+          </div>
 
-            <div class="row">
-                <!-- Próximos Matches -->
-                <div class="col-lg-8 mb-4">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="fas fa-calendar-alt me-2"></i>Próximos Matches
-                            </h5>
-                            <a th:href="@{/referee/assignments}" class="btn btn-sm btn-outline-primary">
-                                Ver Todas
-                            </a>
-                        </div>
-                        <div class="card-body">
-                            <div th:if="${#lists.isEmpty(upcomingMatches)}" class="text-center py-4">
-                                <i class="fas fa-calendar-times text-muted" style="font-size: 3rem;"></i>
-                                <p class="text-muted mt-3 mb-0">No tienes matches programados próximamente</p>
-                            </div>
-                            
-                            <div th:if="${!#lists.isEmpty(upcomingMatches)}">
-                                <div th:each="assignment : ${upcomingMatches}" class="border-bottom pb-3 mb-3">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-8">
-                                            <h6 class="mb-1" th:text="${assignment.match.matchDescription}">Match</h6>
-                                            <p class="text-muted mb-1">
-                                                <i class="fas fa-map-marker-alt me-1"></i>
-                                                <span th:text="${assignment.match.court.name}">Court</span>
-                                            </p>
-                                            <p class="text-muted mb-0">
-                                                <i class="fas fa-user-tie me-1"></i>
-                                                <span th:text="${assignment.role.displayName}">Role</span>
-                                            </p>
-                                        </div>
-                                        <div class="col-md-4 text-md-end">
-                                            <div class="text-primary fw-bold" 
-                                                 th:text="${#temporals.format(assignment.match.dateHour, 'dd/MM/yyyy')}">
-                                                Date
-                                            </div>
-                                            <div class="text-muted" 
-                                                 th:text="${#temporals.format(assignment.match.dateHour, 'HH:mm')}">
-                                                Hora
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+          <div class="col-md-3 mb-3">
+            <div class="card dashboard-card bg-success">
+              <div class="card-body text-center">
+                <i class="fas fa-check-circle card-icon"></i>
+                <div class="card-number" th:text="${acceptedAssignments}">
+                  0
+                </div>
+                <h6 class="card-title mb-0">Assignments Aceptadas</h6>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-3">
+            <div class="card dashboard-card bg-info">
+              <div class="card-body text-center">
+                <i class="fas fa-basketball-ball card-icon"></i>
+                <div class="card-number" th:text="${referee.rank.displayName}">
+                  -
+                </div>
+                <h6 class="card-title mb-0">Escalafón</h6>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-3">
+            <div class="card dashboard-card bg-primary">
+              <div class="card-body text-center">
+                <i class="fas fa-medal card-icon"></i>
+                <div
+                  class="card-number"
+                  th:text="${referee.specialty.displayName}"
+                >
+                  -
+                </div>
+                <h6 class="card-title mb-0">Specialty</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Próximos Matches -->
+          <div class="col-lg-8 mb-4">
+            <div class="card">
+              <div
+                class="card-header d-flex justify-content-between align-items-center"
+              >
+                <h5 class="mb-0">
+                  <i class="fas fa-calendar-alt me-2"></i>Próximos Matches
+                </h5>
+                <a
+                  th:href="@{/referee/assignments}"
+                  class="btn btn-sm btn-outline-primary"
+                >
+                  Ver Todas
+                </a>
+              </div>
+              <div class="card-body">
+                <div
+                  th:if="${#lists.isEmpty(upcomingMatches)}"
+                  class="text-center py-4"
+                >
+                  <i
+                    class="fas fa-calendar-times text-muted"
+                    style="font-size: 3rem"
+                  ></i>
+                  <p class="text-muted mt-3 mb-0">
+                    No tienes matches programados próximamente
+                  </p>
                 </div>
 
-                <!-- Assignments Recientes -->
-                <div class="col-lg-4 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="fas fa-history me-2"></i>Actividad Reciente
-                            </h5>
+                <div th:if="${!#lists.isEmpty(upcomingMatches)}">
+                  <div
+                    th:each="assignment : ${upcomingMatches}"
+                    class="border-bottom pb-3 mb-3"
+                  >
+                    <div class="row align-items-center">
+                      <div class="col-md-8">
+                        <h6
+                          class="mb-1"
+                          th:text="${assignment.match.matchDescription}"
+                        >
+                          Match
+                        </h6>
+                        <p class="text-muted mb-1">
+                          <i class="fas fa-map-marker-alt me-1"></i>
+                          <span th:text="${assignment.match.court.name}"
+                            >Court</span
+                          >
+                        </p>
+                        <p class="text-muted mb-0">
+                          <i class="fas fa-user-tie me-1"></i>
+                          <span th:text="${assignment.role.displayName}"
+                            >Role</span
+                          >
+                        </p>
+                      </div>
+                      <div class="col-md-4 text-md-end">
+                        <div
+                          class="text-primary fw-bold"
+                          th:text="${#temporals.format(assignment.match.dateHour, 'dd/MM/yyyy')}"
+                        >
+                          Date
                         </div>
-                        <div class="card-body">
-                            <div th:if="${#lists.isEmpty(recentAssignments)}" class="text-center py-4">
-                                <i class="fas fa-inbox text-muted" style="font-size: 2rem;"></i>
-                                <p class="text-muted mt-2 mb-0">No hay actividad reciente</p>
-                            </div>
-                            
-                            <div th:if="${!#lists.isEmpty(recentAssignments)}">
-                                <div th:each="assignment : ${recentAssignments}" class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0 me-3">
-                                        <span class="badge" th:classappend="  
+                        <div
+                          class="text-muted"
+                          th:text="${#temporals.format(assignment.match.dateHour, 'HH:mm')}"
+                        >
+                          Hora
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assignments Recientes -->
+          <div class="col-lg-4 mb-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-history me-2"></i>Actividad Reciente
+                </h5>
+              </div>
+              <div class="card-body">
+                <div
+                  th:if="${#lists.isEmpty(recentAssignments)}"
+                  class="text-center py-4"
+                >
+                  <i
+                    class="fas fa-inbox text-muted"
+                    style="font-size: 2rem"
+                  ></i>
+                  <p class="text-muted mt-2 mb-0">No hay actividad reciente</p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(recentAssignments)}">
+                  <div
+                    th:each="assignment : ${recentAssignments}"
+                    class="d-flex align-items-center mb-3"
+                  >
+                    <div class="flex-shrink-0 me-3">
+                      <span
+                        class="badge"
+                        th:classappend="  
                                                        ${assignment.state.name() == 'PENDING' ? 'status-pending' : 
                                                        assignment.state.name() == 'ACCEPTED' ? 'status-accepted' : 
-                                                       assignment.state.name() == 'REJECTED' ? 'status-rejected' : 'status-completed'}" 
-                                              th:text="${assignment.state.displayName}">
-                                            State
-                                        </span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-bold small" th:text="${assignment.match.matchDescription}">Match</div>
-                                        <div class="text-muted small" th:text="${assignment.role.displayName}">Role</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                                       assignment.state.name() == 'REJECTED' ? 'status-rejected' : 'status-completed'}"
+                        th:text="${assignment.state.displayName}"
+                      >
+                        State
+                      </span>
                     </div>
+                    <div class="flex-grow-1">
+                      <div
+                        class="fw-bold small"
+                        th:text="${assignment.match.matchDescription}"
+                      >
+                        Match
+                      </div>
+                      <div
+                        class="text-muted small"
+                        th:text="${assignment.role.displayName}"
+                      >
+                        Role
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
+          </div>
 
-            <!-- Quick Actions -->
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="fas fa-bolt me-2"></i>Acciones Rápidas
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-3 mb-2">
-                                    <a th:href="@{/referee/assignments}" class="btn btn-outline-primary w-100">
-                                        <i class="fas fa-tasks me-2"></i>Ver Assignments
-                                    </a>
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <a th:href="@{/referee/calendar}" class="btn btn-outline-success w-100">
-                                        <i class="fas fa-calendar me-2"></i>Calendario
-                                    </a>
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <a th:href="@{/referee/profile}" class="btn btn-outline-info w-100">
-                                        <i class="fas fa-user-edit me-2"></i>Editar Perfil
-                                    </a>
-                                </div>
-                                <div class="col-md-3 mb-2">
-                                    <a href="#" class="btn btn-outline-warning w-100">
-                                        <i class="fas fa-file-pdf me-2"></i>Mis Settlements
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Quick Actions -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-3 mb-2">
+                    <a
+                      th:href="@{/referee/assignments}"
+                      class="btn btn-outline-primary w-100"
+                    >
+                      <i class="fas fa-tasks me-2"></i>Ver Assignments
+                    </a>
+                  </div>
+                  <div class="col-md-3 mb-2">
+                    <a
+                      th:href="@{/referee/calendar}"
+                      class="btn btn-outline-success w-100"
+                    >
+                      <i class="fas fa-calendar me-2"></i>Calendario
+                    </a>
+                  </div>
+                  <div class="col-md-3 mb-2">
+                    <a
+                      th:href="@{/referee/profile}"
+                      class="btn btn-outline-info w-100"
+                    >
+                      <i class="fas fa-user-edit me-2"></i>Editar Perfil
+                    </a>
+                  </div>
+                  <div class="col-md-3 mb-2">
+                    <a href="#" class="btn btn-outline-warning w-100">
+                      <i class="fas fa-file-pdf me-2"></i>Mis Settlements
+                    </a>
+                  </div>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script th:src="@{/js/main.js}"></script>
-</body>
+  </body>
 </html>

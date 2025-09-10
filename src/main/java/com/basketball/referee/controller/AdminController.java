@@ -1,7 +1,9 @@
 package com.basketball.referee.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ import com.basketball.referee.model.Referee;
 import com.basketball.referee.model.Tournament;
 import com.basketball.referee.model.User;
 import com.basketball.referee.service.CourtService;
+import com.basketball.referee.service.GradeService;
 import com.basketball.referee.service.MatchAssignmentService;
 import com.basketball.referee.service.MatchService;
 import com.basketball.referee.service.RefereeService;
@@ -57,6 +60,9 @@ public class AdminController {
 
     @Autowired
     private MatchAssignmentService assignmentsService;
+    
+    @Autowired
+    private GradeService gradeService;
 
     // Dashboard
     @GetMapping("/dashboard")
@@ -78,8 +84,9 @@ public class AdminController {
                 .toList();
 
         List<Tournament> currentTournaments = tournamentService.findCurrentTournaments();
-        List<Referee> mostActiveReferees = refereeService.findMostActiveReferees().stream().limit(5).toList();
+        List<Referee> topReferees = refereeService.findTopRefereesByAverageScore(5);
 
+        model.addAttribute("topReferees", topReferees);
         model.addAttribute("totalReferees", totalReferees);
         model.addAttribute("totalTournaments", totalTournaments);
         model.addAttribute("totalCourts", totalCourts);
@@ -90,7 +97,6 @@ public class AdminController {
         model.addAttribute("assignmentsCompletadas", assignmentsCompletadas);
         model.addAttribute("recentReferees", recentReferees);
         model.addAttribute("currentTournaments", currentTournaments);
-        model.addAttribute("mostActiveReferees", mostActiveReferees);
         model.addAttribute("title", "Dashboard Administrativo");
 
         return "admin/dashboard";
@@ -111,7 +117,16 @@ public class AdminController {
             referees = refereeService.findAll();
         }
         
+        Map<Long, Double> averages = referees.stream()
+                .filter(r -> r.getId() != null) // evita referees sin ID
+                .collect(Collectors.toMap(
+                    Referee::getId,
+                    r -> Optional.ofNullable(gradeService.findAverageByReferee(r.getId()))
+                                .orElse(0.0) // valor por defecto si no hay calificaciones
+                ));
+
         model.addAttribute("referees", referees);
+        model.addAttribute("averages", averages);
         model.addAttribute("title", "Gestión de Árbitros");
         return "admin/referees/list";
     }

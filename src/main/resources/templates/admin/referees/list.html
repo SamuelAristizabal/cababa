@@ -98,6 +98,7 @@
                                             <th>Escalafón</th>
                                             <th>Specialty</th>
                                             <th>State</th>
+                                            <th>Grade</th>
                                             <th>Matches</th>
                                             <th>Acciones</th>
                                         </tr>
@@ -106,8 +107,8 @@
                                         <tr th:each="referee : ${referees}">
                                             <td>
                                                 <img th:src="${referee.urlPhoto != null ? referee.urlPhoto : '/images/default-avatar.png'}" 
-                                                     alt="Avatar" 
-                                                     class="profile-image-small">
+                                                    alt="Avatar" 
+                                                    class="profile-image-small">
                                             </td>
                                             <td>
                                                 <div class="fw-bold" th:text="${referee.user.fullName}">Name</div>
@@ -122,24 +123,37 @@
                                             </td>
                                             <td>
                                                 <span th:class="'badge ' + (${referee.active} ? 'bg-success' : 'bg-danger')"
-                                                      th:text="${referee.active} ? 'Active' : 'Inactive'">
+                                                    th:text="${referee.active} ? 'Active' : 'Inactive'">
                                                     State
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${averages[referee.id] != null}">
+                                                    <i class="fas fa-star text-warning"></i>
+                                                    <span th:text="${#numbers.formatDecimal(averages[referee.id], 1, 1)}"></span> / 5
+                                                </span>
+                                                <span th:if="${averages[referee.id] == null}" class="text-muted">
+                                                    Sin calificación
                                                 </span>
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <a th:href="@{/admin/referees/{id}(id=${referee.id})}" 
-                                                       class="btn btn-sm btn-outline-info" title="Ver">
+                                                    class="btn btn-sm btn-outline-info" title="Ver">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                     <a th:href="@{/admin/referees/{id}/edit(id=${referee.id})}" 
-                                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                                    class="btn btn-sm btn-outline-primary" title="Editar">
                                                         <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/referees/{id}/grade(id=${referee.id})}" 
+                                                    class="btn btn-sm btn-outline-success" title="Calificar">
+                                                        <i class="fas fa-star"></i>
                                                     </a>
                                                     <button type="button" 
                                                             class="btn btn-sm btn-outline-warning" 
                                                             th:onclick="'toggleStatus(' + ${referee.id} + ')'"
-                                                            th:title="${referee.active} ? 'Desactiver' : 'Activer'">
+                                                            th:title="${referee.active} ? 'Desactivar' : 'Activar'">
                                                         <i th:class="'fas ' + (${referee.active} ? 'fa-ban' : 'fa-check')"></i>
                                                     </button>
                                                 </div>
