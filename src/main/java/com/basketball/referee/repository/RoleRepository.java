@@ -1,6 +1,6 @@
 package com.basketball.referee.repository;
 
-import com.basketball.referee.entity.Role;
+import com.basketball.referee.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

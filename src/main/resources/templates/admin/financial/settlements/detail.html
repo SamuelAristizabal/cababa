@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/base}"
+>
+  <head>
+    <title th:text="${title}">Detalle Liquidación</title>
+  </head>
+  <body>
+    <div layout:fragment="content" class="container-fluid">
+      <h1 class="h3 mb-4" th:text="${title}">Detalle de Liquidación</h1>
+
+      <!-- Info del árbitro -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 th:text="${referee.user.fullName}">Name árbitro</h5>
+          <p class="mb-1">
+            <strong>Document:</strong>
+            <span th:text="${referee.document}"></span>
+          </p>
+          <p class="mb-1">
+            <strong>Escalafón:</strong>
+            <span th:text="${referee.rank.displayName}"></span>
+          </p>
+          <p class="mb-0">
+            <strong>Periodo:</strong> <span th:text="${yearMonth}"></span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Resumen -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card text-center shadow-sm">
+            <div class="card-body">
+              <h6>Total Matches</h6>
+              <h3 th:text="${settlement.totalMatches}">0</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-center shadow-sm">
+            <div class="card-body">
+              <h6>Amount Total</h6>
+              <h3
+                th:text="${#numbers.formatDecimal(settlement.totalAmount, 0, 'COMMA', 2, 'POINT')}"
+              ></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desglose por role -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Resumen por Role</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered text-center">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Matches</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="entry : ${settlement.matchesByRole}">
+                <td th:text="${entry.key}">Role</td>
+                <td th:text="${entry.value}">0</td>
+                <td th:text="${#numbers.formatDecimal(settlement.amountsByRole[entry.key], 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detalle de assignments -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Matches Completados</h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Tournament</th>
+                <th>Role</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="a : ${settlement.assignments}">
+                <td th:text="${a.match.dateHour}">2025-09-08</td>
+                <td th:text="${a.match.tournament.name}">Tournament X</td>
+                <td th:text="${a.role.displayName}">Juez</td>
+                <td
+                  th:text="${#numbers.formatDecimal(@feeService.calculatePayment(a), 0, 'COMMA', 2, 'POINT')}"
+                >
+                  0.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <a
+          th:href="@{/admin/financial/settlements}"
+          class="btn btn-outline-secondary"
+          >Volver</a
+        >
+      </div>
+    </div>
+  </body>
+</html>

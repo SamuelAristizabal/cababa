@@ -64,16 +64,16 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="firstName" class="form-label">
-                                        <i class="fas fa-user me-2"></i>Nombre *
+                                        <i class="fas fa-user me-2"></i>Name *
                                     </label>
                                     <input type="text" 
                                            class="form-control" 
                                            id="firstName" 
                                            th:field="*{firstName}"
-                                           placeholder="Ingrese su nombre"
+                                           placeholder="Ingrese su name"
                                            required>
                                     <div class="invalid-feedback">
-                                        Por favor ingrese su nombre.
+                                        Por favor ingrese su name.
                                     </div>
                                     <div th:if="${#fields.hasErrors('firstName')}" class="text-danger">
                                         <small th:errors="*{firstName}"></small>
@@ -125,10 +125,10 @@
                                        class="form-control" 
                                        id="username" 
                                        th:field="*{username}"
-                                       placeholder="Ingrese su nombre de usuario"
+                                       placeholder="Ingrese su name de usuario"
                                        required>
                                 <div class="invalid-feedback">
-                                    Por favor ingrese un nombre de usuario.
+                                    Por favor ingrese un name de usuario.
                                 </div>
                                 <div th:if="${#fields.hasErrors('username')}" class="text-danger">
                                     <small th:errors="*{username}"></small>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Gestión de Matches</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Gestión de Matches</h1>
+                            <p class="text-muted mb-0">Programar y administrar matches</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/admin/matches/calendar}" class="btn btn-outline-info">
+                                <i class="fas fa-calendar me-2"></i>Calendario
+                            </a>
+                            <a th:href="@{/admin/matches/new}" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i>Nuevo Match
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/matches}" method="get" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="search" class="form-label">Buscar</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           th:value="${param.search}" placeholder="Equipos o tournament">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="tournament" class="form-label">Tournament</label>
+                                    <select class="form-select" id="tournament" name="tournament">
+                                        <option value="">Todos</option>
+                                        <option th:each="tournament : ${tournaments}"
+                                                th:value="${tournament.id}"
+                                                th:text="${tournament.name}"
+                                                th:selected="${param.tournament == tournament.id.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="state" class="form-label">State</label>
+                                    <select class="form-select" id="state" name="state">
+                                        <option value="">Todos</option>
+                                        <option th:each="state : ${states}"
+                                                th:value="${state}"
+                                                th:text="${state.displayName}"
+                                                th:selected="${param.state == state.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="date" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="date" name="date" 
+                                           th:value="${param.date}">
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-search me-1"></i>Buscar
+                                    </button>
+                                    <a th:href="@{/admin/matches}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matches Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(matches)}" class="text-center py-5">
+                                <i class="fas fa-basketball-ball text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted mt-3">No se encontraron matches</h5>
+                                <p class="text-muted">No hay matches programados que coincidan con los criterios.</p>
+                            </div>
+
+                            <div th:if="${!#lists.isEmpty(matches)}" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date/Hora</th>
+                                            <th>Equipos</th>
+                                            <th>Tournament</th>
+                                            <th>Court</th>
+                                            <th>State</th>
+                                            <th>Árbitros</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="match : ${matches}">
+                                            <td>
+                                                <div class="fw-bold" th:text="${#temporals.format(match.dateHour, 'dd/MM/yyyy')}">Date</div>
+                                                <div class="text-muted small" th:text="${#temporals.format(match.dateHour, 'HH:mm')}">Hora</div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold" th:text="${match.localTeam} + ' vs ' + ${match.visitorTeam}">Equipos</div>
+                                                <div th:if="${match.localResult != null}" class="text-muted small">
+                                                    Resultado: <span th:text="${match.localResult} + '-' + ${match.visitorResult}">0-0</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info" th:text="${match.tournament.name}">Tournament</span>
+                                            </td>
+                                            <td th:text="${match.court.name}">Court</td>
+                                            <td>
+                                                <span class="badge" th:classappend="  
+                                                               ${match.state.name() == 'PROGRAMMED' ? 'bg-primary' : 
+                                                                match.state.name() == 'IN_PROGRESS' ? 'bg-warning' : 
+                                                                match.state.name() == 'FINISHED' ? 'bg-success' : 'bg-danger'}"
+                                                      th:text="${match.state.displayName}">
+                                                    State
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary" th:text="${#lists.size(match.assignments)}">0</span>
+                                                asignados
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/matches/{id}(id=${match.id})}" 
+                                                       class="btn btn-sm btn-outline-info" title="Ver">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/matches/{id}/edit(id=${match.id})}" 
+                                                       class="btn btn-sm btn-outline-primary" title="Editar"
+                                                       th:if="${match.state.name() == 'PROGRAMMED'}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <!--a th:href="@{/admin/matches/{id}/assign(id=${match.id})}" 
+                                                       class="btn btn-sm btn-outline-success" title="Asignar Árbitros"
+                                                       th:if="${match.state.name() == 'PROGRAMMED'}">
+                                                        <i class="fas fa-user-plus"></i>
+                                                    </a-->
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger" 
+                                                            th:onclick="'cancelMatch(' + ${match.id} + ')'"
+                                                            title="Cancelar"
+                                                            th:if="${match.state.name() == 'PROGRAMMED'}">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        function cancelMatch(matchId) {
+            if (confirm('¿Está seguro de cancelar este match? Esta acción notificará a todos los árbitros asignados.')) {
+                fetch(`/admin/matches/${matchId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al cancelar el match');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cancelar el match');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

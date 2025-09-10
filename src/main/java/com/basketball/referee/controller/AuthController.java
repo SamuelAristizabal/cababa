@@ -1,6 +1,6 @@
 package com.basketball.referee.controller;
 
-import com.basketball.referee.entity.User;
+import com.basketball.referee.model.User;
 import com.basketball.referee.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -75,7 +75,7 @@ public class AuthController {
 
         // Check if username already exists
         if (userService.existsByUsername(user.getUsername())) {
-            result.rejectValue("username", "error.user", "El nombre de usuario ya existe");
+            result.rejectValue("username", "error.user", "El name de usuario ya existe");
             model.addAttribute("title", "Registro de Usuario");
             return "auth/register";
         }

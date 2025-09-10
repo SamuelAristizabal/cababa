@@ -21,95 +21,95 @@
                                 Para acceder al sistema, necesitas completar tu perfil de árbitro con la siguiente información.
                             </div>
 
-                            <form th:action="@{/referee/complete-profile}" th:object="${arbitro}" method="post" class="needs-validation" novalidate>
+                            <form th:action="@{/referee/complete-profile}" th:object="${referee}" method="post" class="needs-validation" novalidate>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="documento" class="form-label">Documento de Identidad *</label>
+                                        <label for="document" class="form-label">Document de Identidad *</label>
                                         <input type="text" 
                                                class="form-control" 
-                                               id="documento" 
-                                               th:field="*{documento}"
+                                               id="document" 
+                                               th:field="*{document}"
                                                placeholder="Ej: 12345678"
                                                required>
                                         <div class="invalid-feedback">
-                                            Por favor ingrese su documento.
+                                            Por favor ingrese su document.
                                         </div>
-                                        <div th:if="${#fields.hasErrors('documento')}" class="text-danger">
-                                            <small th:errors="*{documento}"></small>
+                                        <div th:if="${#fields.hasErrors('document')}" class="text-danger">
+                                            <small th:errors="*{document}"></small>
                                         </div>
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label for="telefono" class="form-label">Teléfono *</label>
+                                        <label for="phone" class="form-label">Teléfono *</label>
                                         <input type="tel" 
                                                class="form-control" 
-                                               id="telefono" 
-                                               th:field="*{telefono}"
+                                               id="phone" 
+                                               th:field="*{phone}"
                                                placeholder="Ej: +57 300 123 4567"
                                                required>
                                         <div class="invalid-feedback">
                                             Por favor ingrese su teléfono.
                                         </div>
-                                        <div th:if="${#fields.hasErrors('telefono')}" class="text-danger">
-                                            <small th:errors="*{telefono}"></small>
+                                        <div th:if="${#fields.hasErrors('phone')}" class="text-danger">
+                                            <small th:errors="*{phone}"></small>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="direccion" class="form-label">Dirección</label>
+                                    <label for="address" class="form-label">Dirección</label>
                                     <input type="text" 
                                            class="form-control" 
-                                           id="direccion" 
-                                           th:field="*{direccion}"
+                                           id="address" 
+                                           th:field="*{address}"
                                            placeholder="Ingrese su dirección">
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
-                                        <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento *</label>
+                                        <label for="birthDate" class="form-label">Date de Nacimiento *</label>
                                         <input type="date" 
                                                class="form-control" 
-                                               id="fechaNacimiento" 
-                                               th:field="*{fechaNacimiento}"
+                                               id="birthDate" 
+                                               th:field="*{birthDate}"
                                                required>
                                         <div class="invalid-feedback">
-                                            Por favor ingrese su fecha de nacimiento.
+                                            Por favor ingrese su date de nacimiento.
                                         </div>
-                                        <div th:if="${#fields.hasErrors('fechaNacimiento')}" class="text-danger">
-                                            <small th:errors="*{fechaNacimiento}"></small>
+                                        <div th:if="${#fields.hasErrors('birthDate')}" class="text-danger">
+                                            <small th:errors="*{birthDate}"></small>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4 mb-3">
-                                        <label for="especialidad" class="form-label">Especialidad *</label>
+                                        <label for="specialty" class="form-label">Specialty *</label>
                                         <select class="form-select" 
-                                                id="especialidad" 
-                                                th:field="*{especialidad}"
+                                                id="specialty" 
+                                                th:field="*{specialty}"
                                                 required>
-                                            <option value="">Seleccione especialidad</option>
-                                            <option th:each="esp : ${especialidades}" 
+                                            <option value="">Seleccione specialty</option>
+                                            <option th:each="esp : ${specialtyes}" 
                                                     th:value="${esp}" 
                                                     th:text="${esp.displayName}">
-                                                Especialidad
+                                                Specialty
                                             </option>
                                         </select>
                                         <div class="invalid-feedback">
-                                            Por favor seleccione una especialidad.
+                                            Por favor seleccione una specialty.
                                         </div>
-                                        <div th:if="${#fields.hasErrors('especialidad')}" class="text-danger">
-                                            <small th:errors="*{especialidad}"></small>
+                                        <div th:if="${#fields.hasErrors('specialty')}" class="text-danger">
+                                            <small th:errors="*{specialty}"></small>
                                         </div>
                                     </div>
 
                                     <div class="col-md-4 mb-3">
-                                        <label for="escalafon" class="form-label">Escalafón *</label>
+                                        <label for="rank" class="form-label">Escalafón *</label>
                                         <select class="form-select" 
-                                                id="escalafon" 
-                                                th:field="*{escalafon}"
+                                                id="rank" 
+                                                th:field="*{rank}"
                                                 required>
                                             <option value="">Seleccione escalafón</option>
-                                            <option th:each="esc : ${escalafones}" 
+                                            <option th:each="esc : ${rankes}" 
                                                     th:value="${esc}" 
                                                     th:text="${esc.displayName}">
                                                 Escalafón
@@ -118,17 +118,17 @@
                                         <div class="invalid-feedback">
                                             Por favor seleccione un escalafón.
                                         </div>
-                                        <div th:if="${#fields.hasErrors('escalafon')}" class="text-danger">
-                                            <small th:errors="*{escalafon}"></small>
+                                        <div th:if="${#fields.hasErrors('rank')}" class="text-danger">
+                                            <small th:errors="*{rank}"></small>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label for="observaciones" class="form-label">Observaciones</label>
+                                    <label for="observations" class="form-label">Observations</label>
                                     <textarea class="form-control" 
-                                              id="observaciones" 
-                                              th:field="*{observaciones}"
+                                              id="observations" 
+                                              th:field="*{observations}"
                                               rows="3"
                                               placeholder="Información adicional (opcional)"></textarea>
                                 </div>

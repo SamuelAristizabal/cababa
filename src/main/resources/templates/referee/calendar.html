@@ -72,7 +72,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h1 class="h3 mb-0">Mi Calendario</h1>
-                            <p class="text-muted mb-0">Vista mensual de asignaciones</p>
+                            <p class="text-muted mb-0">Vista mensual de assignments</p>
                         </div>
                         <a th:href="@{/referee/dashboard}" class="btn btn-outline-primary">
                             <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
@@ -122,12 +122,12 @@
                         
                         <div class="day-number" th:text="${dayDate.dayOfMonth}">1</div>
                         
-                        <div th:each="asignacion : ${dayAssignments}" 
-                             th:class="'assignment-item assignment-' + ${asignacion.estado.name().toLowerCase()}"
-                             th:title="${asignacion.partido.partidoDescripcion + ' - ' + asignacion.rol.displayName}"
+                        <div th:each="assignment : ${dayAssignments}" 
+                             th:class="'assignment-item assignment-' + ${assignment.state.name().toLowerCase()}"
+                             th:title="${assignment.match.matchDescription + ' - ' + assignment.role.displayName}"
                              data-bs-toggle="tooltip">
-                            <div th:text="${#temporals.format(asignacion.partido.fechaHora, 'HH:mm')}">Hora</div>
-                            <div th:text="${asignacion.rol.displayName}">Rol</div>
+                            <div th:text="${#temporals.format(assignment.match.dateHour, 'HH:mm')}">Hora</div>
+                            <div th:text="${assignment.role.displayName}">Role</div>
                         </div>
                     </div>
                 </div>
@@ -142,19 +142,19 @@
                             <div class="d-flex gap-4 flex-wrap">
                                 <div class="d-flex align-items-center">
                                     <div class="assignment-item assignment-pendiente me-2">Pendiente</div>
-                                    <span>Asignaciones pendientes de respuesta</span>
+                                    <span>Assignments pendientes de respuesta</span>
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <div class="assignment-item assignment-aceptada me-2">Aceptada</div>
-                                    <span>Asignaciones aceptadas</span>
+                                    <span>Assignments aceptadas</span>
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <div class="assignment-item assignment-rechazada me-2">Rechazada</div>
-                                    <span>Asignaciones rechazadas</span>
+                                    <span>Assignments rechazadas</span>
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <div class="assignment-item assignment-completada me-2">Completada</div>
-                                    <span>Partidos completados</span>
+                                    <span>Matches completados</span>
                                 </div>
                             </div>
                         </div>

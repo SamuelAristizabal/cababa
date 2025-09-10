@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${referee.id != null ? 'Editar Árbitro' : 'Nuevo Árbitro'}">Árbitro</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0" th:text="${referee.id != null ? 'Editar Árbitro' : 'Nuevo Árbitro'}">Árbitro</h1>
+                            <p class="text-muted mb-0">Complete la información del árbitro</p>
+                        </div>
+                        <a th:href="@{/admin/referees}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${errorMessages != null}">
+                <ul class="alert alert-danger">
+                    <li th:each="err : ${errorMessages}" th:text="${err}"></li>
+                </ul>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{${referee.id != null}? '/admin/referees/' + ${referee.id} : '/admin/referees'}" th:object="${referee}" method="post" enctype="multipart/form-data">
+                                <input type="hidden" th:field="*{id}">
+                                <input type="hidden" th:field="*{user.id}">
+
+                                <!-- Personal Information -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-user me-2"></i>Información Personal
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">Name *</label>
+                                        <input type="text" class="form-control" id="firstName" 
+                                               th:field="*{user.firstName}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('user.firstName')}" 
+                                             th:errors="*{user.firstName}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">Apellido *</label>
+                                        <input type="text" class="form-control" id="lastName" 
+                                               th:field="*{user.lastName}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('user.lastName')}" 
+                                             th:errors="*{user.lastName}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email *</label>
+                                        <input type="email" class="form-control" id="email" 
+                                               th:field="*{user.email}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('user.email')}" 
+                                             th:errors="*{user.email}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="document" class="form-label">Document *</label>
+                                        <input type="text" class="form-control" id="document" 
+                                               th:field="*{document}">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Teléfono *</label>
+                                        <input type="tel" class="form-control" id="phone" 
+                                               th:field="*{phone}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="birthDate" class="form-label">Date de Nacimiento *</label>
+                                        <input type="date" class="form-control" id="birthDate" 
+                                            th:field="*{birthDate}" required>
+                                    </div>
+                                </div>
+
+                                <!-- Professional Information -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-basketball-ball me-2"></i>Información Profesional
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="rank" class="form-label">Escalafón *</label>
+                                        <select class="form-select" id="rank" th:field="*{rank}" required>
+                                            <option value="">Seleccione un escalafón</option>
+                                            <option th:each="rank : ${T(com.basketball.referee.model.Referee.Rank).values()}"
+                                                    th:value="${rank}"
+                                                    th:text="${rank.displayName}">
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('rank')}" 
+                                             th:errors="*{rank}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="specialty" class="form-label">Specialty *</label>
+                                        <select class="form-select" id="specialty" th:field="*{specialty}" required>
+                                            <option value="">Seleccione una specialty</option>
+                                            <option th:each="specialty : ${T(com.basketball.referee.model.Referee.Specialty).values()}"
+                                                    th:value="${specialty}"
+                                                    th:text="${specialty.displayName}">
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('specialty')}" 
+                                             th:errors="*{specialty}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" id="active" 
+                                                   th:field="*{active}">
+                                            <label class="form-check-label" for="active">
+                                                Árbitro Active
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Photo Upload -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-camera me-2"></i>Foto de Perfil
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-4 text-center mb-3">
+                                        <img id="photoPreview" 
+                                             th:src="${referee.urlPhoto != null ? referee.urlPhoto : '/images/default-avatar.png'}" 
+                                             alt="Vista previa" 
+                                             class="profile-image-large mb-3">
+                                        <input type="file" class="form-control" id="foto" name="foto" 
+                                               accept="image/*" onchange="previewPhoto(this)">
+                                        <small class="text-muted">Formatos: JPG, PNG. Máximo 2MB</small>
+                                    </div>
+                                </div>
+
+                                <!-- Password -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-lock me-2"></i>Credenciales de Acceso
+                                        </h5>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="username" class="form-label">Name de Usuario *</label>
+                                        <input type="text" class="form-control" id="username" 
+                                               th:field="*{user.username}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('user.username')}" 
+                                             th:errors="*{user.username}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="password" class="form-label">Contraseña *</label>
+                                        <input type="password" class="form-control" id="password" 
+                                               th:field="*{user.password}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('user.password')}" 
+                                             th:errors="*{user.password}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a th:href="@{/admin/referees}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times me-2"></i>Cancelar
+                                            </a>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-save me-2"></i>
+                                                <span th:text="${referee.id != null ? 'Actualizar' : 'Crear'} + ' Árbitro'">Guardar</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

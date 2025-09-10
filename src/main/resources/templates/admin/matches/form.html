@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${match.id != null ? 'Editar Match' : 'Programar Match'}">Match</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0" th:text="${match.id != null ? 'Editar Match' : 'Programar Match'}">Match</h1>
+                            <p class="text-muted mb-0">Complete la información del match</p>
+                        </div>
+                        <a th:href="@{/admin/matches}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${errorMessages != null}">
+                <ul class="alert alert-danger">
+                    <li th:each="err : ${errorMessages}" th:text="${err}"></li>
+                </ul>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/matches}" th:object="${match}" method="post">
+                                <input type="hidden" th:field="*{id}">
+
+                                <!-- Match Information -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-basketball-ball me-2"></i>Información del Match
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="tournament" class="form-label">Tournament *</label>
+                                        <select class="form-select" id="tournament" th:field="*{tournament}" required>
+                                            <option value="">Seleccione un tournament</option>
+                                            <option th:each="tournament : ${tournaments}"
+                                                    th:value="${tournament.id}"
+                                                    th:text="${tournament.name}">
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('tournament')}" 
+                                             th:errors="*{tournament}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="court" class="form-label">Court *</label>
+                                        <select class="form-select" id="court" th:field="*{court}" required>
+                                            <option value="">Seleccione una court</option>
+                                            <option th:each="court : ${courts}"
+                                                    th:value="${court.id}"
+                                                    th:text="${court.name} + ' - ' + ${court.address}">
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('court')}" 
+                                             th:errors="*{court}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Teams -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-users me-2"></i>Equipos
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="localTeam" class="form-label">Equipo Local *</label>
+                                        <input type="text" class="form-control" id="localTeam" 
+                                               th:field="*{localTeam}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('localTeam')}" 
+                                             th:errors="*{localTeam}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="visitorTeam" class="form-label">Equipo Visitante *</label>
+                                        <input type="text" class="form-control" id="visitorTeam" 
+                                               th:field="*{visitorTeam}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('visitorTeam')}" 
+                                             th:errors="*{visitorTeam}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Date and Time -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="dateHour" class="form-label">Date y Hora *</label>
+                                        <input type="datetime-local" class="form-control" id="dateHour"
+                                            th:field="*{dateHour}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('dateHour')}"
+                                            th:errors="*{dateHour}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Information -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Información Adicional
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-12 mb-3">
+                                        <label for="observations" class="form-label">Observations</label>
+                                        <textarea class="form-control" id="observations" rows="3"
+                                                  th:field="*{observations}" 
+                                                  placeholder="Observations especiales, instrucciones, etc."></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a th:href="@{/admin/matches}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times me-2"></i>Cancelar
+                                            </a>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-save me-2"></i>
+                                                <span th:text="${match.id != null ? 'Actualizar' : 'Programar'} + ' Match'">Guardar</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        // Set minimum date to today
+        document.getElementById('date').min = new Date().toISOString().split('T')[0];
+        
+        // Validate that the match is scheduled for future
+        document.getElementById('date').addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                alert('No se puede programar un match en el pasado');
+                this.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

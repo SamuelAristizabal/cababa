@@ -1,7 +1,7 @@
 package com.basketball.referee.config;
 
-import com.basketball.referee.entity.User;
-import com.basketball.referee.entity.Role;
+import com.basketball.referee.model.User;
+import com.basketball.referee.model.Role;
 import com.basketball.referee.repository.UserRepository;
 import com.basketball.referee.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;

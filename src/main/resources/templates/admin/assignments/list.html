@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${title}">Gestión de Assignments</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-0">Gestión de Assignments</h1>
+                        <p class="text-muted mb-0">Administrar assignments de matches y árbitros</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignments Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(assignments)}" class="text-center py-5">
+                            <i class="fas fa-tasks text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted mt-3">No se encontraron assignments</h5>
+                            <p class="text-muted">No hay assignments registradas en el sistema.</p>
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(assignments)}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Árbitro</th>
+                                        <th>Match</th>
+                                        <th>Role</th>
+                                        <th>State</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="asig : ${assignments}">
+                                        <td th:text="${asig.id}">1</td>
+                                        <td th:text="${asig.referee.user.firstName}">Árbitro</td>
+                                        <td th:text="${asig.match.localTeam} + ' vs ' + ${asig.match.visitorTeam}">Match</td>
+                                        <td>
+                                            <span class="badge bg-info" th:text="${asig.role}">ROL</span>
+                                        </td>
+                                        <td>
+                                            <form th:action="@{/admin/assignments/{id}/update-state(id=${asig.id})}" method="post" class="d-flex">
+                                                <select name="state" class="form-select form-select-sm me-2">
+                                                    <option th:each="state : ${states}"
+                                                            th:value="${state}"
+                                                            th:text="${state}"
+                                                            th:selected="${state == asig.state}">
+                                                    </option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-save me-1"></i>Guardar
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/admin/matches/{id}(id=${asig.match.id})}" 
+                                                   class="btn btn-sm btn-outline-info" title="Ver match">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        th:onclick="'cancelAssignment(' + ${asig.id} + ')'">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para cancelar -->
+    <script layout:fragment="scripts">
+        function cancelAssignment(assignmentId) {
+            if (confirm('¿Está seguro de cancelar esta asignación?')) {
+                fetch(`/admin/assignments/${assignmentId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al cancelar la asignación');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cancelar la asignación');
+                });
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

@@ -1,20 +1,39 @@
 package com.basketball.referee.controller;
 
-import com.basketball.referee.entity.*;
-import com.basketball.referee.service.*;
-import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-import java.util.Optional;
+import com.basketball.referee.model.Referee;
+import com.basketball.referee.model.MatchAssignment;
+import com.basketball.referee.model.Court;
+import com.basketball.referee.model.Match;
+import com.basketball.referee.model.Tournament;
+import com.basketball.referee.model.User;
+import com.basketball.referee.service.RefereeService;
+import com.basketball.referee.service.MatchAssignmentService;
+import com.basketball.referee.service.CourtService;
+import com.basketball.referee.service.MatchService;
+import com.basketball.referee.service.TournamentService;
+import com.basketball.referee.service.UserService;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/admin")
@@ -25,51 +44,51 @@ public class AdminController {
     private UserService userService;
 
     @Autowired
-    private ArbitroService arbitroService;
+    private RefereeService refereeService;
 
     @Autowired
-    private TorneoService torneoService;
+    private TournamentService tournamentService;
 
     @Autowired
-    private CanchaService canchaService;
+    private CourtService courtService;
 
     @Autowired
-    private PartidoService partidoService;
+    private MatchService matchService;
 
     @Autowired
-    private AsignacionPartidoService asignacionService;
+    private MatchAssignmentService assignmentsService;
 
     // Dashboard
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         // Statistics
-        long totalArbitros = arbitroService.countActive();
-        long totalTorneos = torneoService.countActive();
-        long totalCanchas = canchaService.countActive();
-        long partidosProgramados = partidoService.countByEstado(Partido.EstadoPartido.PROGRAMADO);
-        long asignacionesPendientes = asignacionService.countByEstado(AsignacionPartido.EstadoAsignacion.PENDIENTE);
-        long asignacionesAceptadas = asignacionService.countByEstado(AsignacionPartido.EstadoAsignacion.ACEPTADA);
-        long asignacionesRechazadas = asignacionService.countByEstado(AsignacionPartido.EstadoAsignacion.RECHAZADA);
-        long asignacionesCompletadas = asignacionService.countByEstado(AsignacionPartido.EstadoAsignacion.COMPLETADA);
+        long totalReferees = refereeService.countActive();
+        long totalTournaments = tournamentService.countActive();
+        long totalCourts = courtService.countActive();
+        long matchesProgrammed = matchService.countByState(Match.MatchState.PROGRAMMED);
+        long assignmentsPending = assignmentsService.countByState(MatchAssignment.AssignmentState.PENDING);
+        long assignmentsAceptadas = assignmentsService.countByState(MatchAssignment.AssignmentState.ACCEPTED);
+        long assignmentsRechazadas = assignmentsService.countByState(MatchAssignment.AssignmentState.REJECTED);
+        long assignmentsCompletadas = assignmentsService.countByState(MatchAssignment.AssignmentState.COMPLETED);
 
         // Recent data
-        List<Arbitro> recentArbitros = arbitroService.findAll().stream()
+        List<Referee> recentReferees = refereeService.findAll().stream()
                 .sorted((a1, a2) -> a2.getCreatedAt().compareTo(a1.getCreatedAt()))
                 .limit(5)
                 .toList();
 
-        List<Torneo> currentTournaments = torneoService.findCurrentTournaments();
-        List<Arbitro> mostActiveReferees = arbitroService.findMostActiveReferees().stream().limit(5).toList();
+        List<Tournament> currentTournaments = tournamentService.findCurrentTournaments();
+        List<Referee> mostActiveReferees = refereeService.findMostActiveReferees().stream().limit(5).toList();
 
-        model.addAttribute("totalArbitros", totalArbitros);
-        model.addAttribute("totalTorneos", totalTorneos);
-        model.addAttribute("totalCanchas", totalCanchas);
-        model.addAttribute("partidosProgramados", partidosProgramados);
-        model.addAttribute("asignacionesPendientes", asignacionesPendientes);
-        model.addAttribute("asignacionesAceptadas", asignacionesAceptadas);
-        model.addAttribute("asignacionesRechazadas", asignacionesRechazadas);
-        model.addAttribute("asignacionesCompletadas", asignacionesCompletadas);
-        model.addAttribute("recentArbitros", recentArbitros);
+        model.addAttribute("totalReferees", totalReferees);
+        model.addAttribute("totalTournaments", totalTournaments);
+        model.addAttribute("totalCourts", totalCourts);
+        model.addAttribute("matchesProgramados", matchesProgrammed);
+        model.addAttribute("assignmentsPendientes", assignmentsPending);
+        model.addAttribute("assignmentsAceptadas", assignmentsAceptadas);
+        model.addAttribute("assignmentsRechazadas", assignmentsRechazadas);
+        model.addAttribute("assignmentsCompletadas", assignmentsCompletadas);
+        model.addAttribute("recentReferees", recentReferees);
         model.addAttribute("currentTournaments", currentTournaments);
         model.addAttribute("mostActiveReferees", mostActiveReferees);
         model.addAttribute("title", "Dashboard Administrativo");
@@ -77,37 +96,37 @@ public class AdminController {
         return "admin/dashboard";
     }
 
-    // CRUD Árbitros
-    @GetMapping("/arbitros")
-    public String listArbitros(@RequestParam(required = false) String search,
-                              @RequestParam(required = false) String escalafon,
-                              @RequestParam(required = false) String especialidad,
-                              @RequestParam(required = false) String activo,
+    // CRUD referees
+    @GetMapping("/referees")
+    public String listReferees(@RequestParam(required = false) String search,
+                              @RequestParam(required = false) String rank,
+                              @RequestParam(required = false) String specialty,
+                              @RequestParam(required = false) String active,
                               Model model) {
-        List<Arbitro> arbitros;
+        List<Referee> referees;
         
-        if (search != null || escalafon != null || especialidad != null || activo != null) {
-            arbitros = arbitroService.findByFilters(search, escalafon, especialidad, activo);
+        if (search != null || rank != null || specialty != null || active != null) {
+            referees = refereeService.findByFilters(search, rank, specialty, active);
         } else {
-            arbitros = arbitroService.findAll();
+            referees = refereeService.findAll();
         }
         
-        model.addAttribute("arbitros", arbitros);
+        model.addAttribute("referees", referees);
         model.addAttribute("title", "Gestión de Árbitros");
-        return "admin/arbitros/list";
+        return "admin/referees/list";
     }
 
-    @GetMapping("/arbitros/new")
-    public String newArbitro(Model model) {
-        Arbitro arbitro = new Arbitro();
-        arbitro.setUser(new User()); // Initialize user object
-        model.addAttribute("arbitro", arbitro);
+    @GetMapping("/referees/new")
+    public String newReferee(Model model) {
+        Referee referee = new Referee();
+        referee.setUser(new User()); // Initialize user object
+        model.addAttribute("referee", referee);
         model.addAttribute("title", "Crear Árbitro");
-        return "admin/arbitros/form";
+        return "admin/referees/form";
     }
 
-    @PostMapping("/arbitros")
-    public String createArbitro(@Valid @ModelAttribute Arbitro arbitro,
+    @PostMapping("/referees")
+    public String createReferee(@Valid @ModelAttribute Referee referee,
                                BindingResult result,
                                @RequestParam(required = false) MultipartFile foto,
                                Model model,
@@ -120,54 +139,54 @@ public class AdminController {
 
             model.addAttribute("errorMessages", errorMessages);
             model.addAttribute("title", "Crear Árbitro");
-            return "admin/arbitros/form";
+            return "admin/referees/form";
         }
 
-        if (userService.existsByEmail(arbitro.getUser().getEmail())) {
+        if (userService.existsByEmail(referee.getUser().getEmail())) {
             result.rejectValue("user.email", "error.user", "El email ya existe");
             model.addAttribute("errorMessages", List.of("⚠️ El email ya existe"));
             model.addAttribute("title", "Crear Árbitro");
-            return "admin/arbitros/form";
+            return "admin/referees/form";
         }
 
         try {
-            arbitroService.createArbitro(arbitro, foto);
+            refereeService.createReferee(referee, foto);
             redirectAttributes.addFlashAttribute("successMessage", "Árbitro creado exitosamente");
-            return "redirect:/admin/arbitros";
+            return "redirect:/admin/referees";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error al crear árbitro: " + e.getMessage());
             model.addAttribute("title", "Crear Árbitro");
-            return "admin/arbitros/form";
+            return "admin/referees/form";
         }
     }
 
-    @GetMapping("/arbitros/{id}")
-    public String viewArbitro(@PathVariable Long id, Model model) {
-        Optional<Arbitro> arbitroOpt = arbitroService.findById(id);
-        if (arbitroOpt.isEmpty()) {
-            return "redirect:/admin/arbitros";
+    @GetMapping("/referees/{id}")
+    public String viewReferee(@PathVariable Long id, Model model) {
+        Optional<Referee> refereeOpt = refereeService.findById(id);
+        if (refereeOpt.isEmpty()) {
+            return "redirect:/admin/referees";
         }
 
-        model.addAttribute("arbitro", arbitroOpt.get());
+        model.addAttribute("referee", refereeOpt.get());
         model.addAttribute("title", "Detalles del Árbitro");
-        return "admin/arbitros/view";
+        return "admin/referees/view";
     }
 
-    @GetMapping("/arbitros/{id}/edit")
-    public String editArbitro(@PathVariable Long id, Model model) {
-        Optional<Arbitro> arbitroOpt = arbitroService.findById(id);
-        if (arbitroOpt.isEmpty()) {
-            return "redirect:/admin/arbitros";
+    @GetMapping("/referees/{id}/edit")
+    public String editReferee(@PathVariable Long id, Model model) {
+        Optional<Referee> refereeOpt = refereeService.findById(id);
+        if (refereeOpt.isEmpty()) {
+            return "redirect:/admin/referees";
         }
 
-        model.addAttribute("arbitro", arbitroOpt.get());
+        model.addAttribute("referee", refereeOpt.get());
         model.addAttribute("title", "Editar Árbitro");
-        return "admin/arbitros/form"; // Use same form template
+        return "admin/referees/form"; // Use same form template
     }
 
-    @PostMapping("/arbitros/{id}")
-    public String updateArbitro(@PathVariable Long id,
-                               @Valid @ModelAttribute Arbitro arbitro,
+    @PostMapping("/referees/{id}")
+    public String updateReferee(@PathVariable Long id,
+                               @Valid @ModelAttribute Referee referee,
                                BindingResult result,
                                @RequestParam(required = false) MultipartFile foto,
                                Model model,
@@ -178,276 +197,276 @@ public class AdminController {
                     .map(error -> "⚠️ " + error.getDefaultMessage())
                     .toList());
             model.addAttribute("title", "Editar Árbitro");
-            return "admin/arbitros/form";
+            return "admin/referees/form";
         }
 
         try {
-            arbitroService.updateArbitro(id, arbitro, foto);
+            refereeService.updateReferee(id, referee, foto);
             redirectAttributes.addFlashAttribute("successMessage", "Árbitro actualizado exitosamente");
-            return "redirect:/admin/arbitros";
+            return "redirect:/admin/referees";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Error al actualizar árbitro: " + e.getMessage());
             model.addAttribute("title", "Editar Árbitro");
-            return "admin/arbitros/form";
+            return "admin/referees/form";
         }
     }
 
-    @PostMapping("/arbitros/{id}/toggle-status")
+    @PostMapping("/referees/{id}/toggle-status")
     @ResponseBody
-    public ResponseEntity<?> toggleArbitroStatus(@PathVariable Long id) {
+    public ResponseEntity<?> toggleRefereeStatus(@PathVariable Long id) {
         try {
-            arbitroService.toggleStatus(id);
+            refereeService.toggleStatus(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al actualizar estado: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al actualizar state: " + e.getMessage());
         }
     }
 
-    @GetMapping("/asignaciones")
-    public String listAsignaciones(Model model) {
-        List<AsignacionPartido> asignaciones = asignacionService.findAll();
-        model.addAttribute("asignaciones", asignaciones);
-        model.addAttribute("estados", AsignacionPartido.EstadoAsignacion.values());
-        model.addAttribute("title", "Gestión de Asignaciones");
-        return "admin/asignaciones/list";
+    @GetMapping("/assignments")
+    public String listAssignments(Model model) {
+        List<MatchAssignment> assignments = assignmentsService.findAll();
+        model.addAttribute("assignments", assignments);
+        model.addAttribute("states", MatchAssignment.AssignmentState.values());
+        model.addAttribute("title", "Gestión de Assignments");
+        return "admin/assignments/list";
     }
 
-    @PostMapping("/asignaciones/{asignacionId}/update-estado")
-    public String updateAsignacionEstado(@PathVariable Long asignacionId,
-                                        @RequestParam("estado") AsignacionPartido.EstadoAsignacion estado,
+    @PostMapping("/assignments/{assignmentId}/update-state")
+    public String updateAssignmentState(@PathVariable Long assignmentId,
+                                        @RequestParam("state") MatchAssignment.AssignmentState state,
                                         RedirectAttributes redirectAttributes) {
-        if (estado == AsignacionPartido.EstadoAsignacion.COMPLETADA) {
-            asignacionService.completeAssignment(asignacionId);
-            redirectAttributes.addFlashAttribute("successMessage", "Estado actualizado correctamente");
-            return "redirect:/admin/asignaciones";
+        if (state == MatchAssignment.AssignmentState.COMPLETED) {
+            assignmentsService.completeAssignment(assignmentId);
+            redirectAttributes.addFlashAttribute("successMessage", "State actualizado correctamente");
+            return "redirect:/admin/assignments";
 
-        } else if((estado == AsignacionPartido.EstadoAsignacion.RECHAZADA)){
-            asignacionService.rejectAssignment(asignacionId);
-            redirectAttributes.addFlashAttribute("successMessage", "Estado actualizado correctamente");
-            return "redirect:/admin/asignaciones";
-        } else if((estado == AsignacionPartido.EstadoAsignacion.ACEPTADA)){
-            asignacionService.acceptAssignment(asignacionId);
-            redirectAttributes.addFlashAttribute("successMessage", "Estado actualizado correctamente");
-            return "redirect:/admin/asignaciones";
+        } else if((state == MatchAssignment.AssignmentState.REJECTED)){
+            assignmentsService.rejectAssignment(assignmentId);
+            redirectAttributes.addFlashAttribute("successMessage", "State actualizado correctamente");
+            return "redirect:/admin/assignments";
+        } else if((state == MatchAssignment.AssignmentState.ACCEPTED)){
+            assignmentsService.acceptAssignment(assignmentId);
+            redirectAttributes.addFlashAttribute("successMessage", "State actualizado correctamente");
+            return "redirect:/admin/assignments";
         }
-        return "redirect:/admin/asignaciones";
+        return "redirect:/admin/assignments";
     }
 
-    // CRUD Torneos
-    @GetMapping("/torneos")
-    public String listTorneos(@RequestParam(required = false) String search,
-                             @RequestParam(required = false) String estado,
+    // CRUD Tournaments
+    @GetMapping("/tournaments")
+    public String listTournaments(@RequestParam(required = false) String search,
+                             @RequestParam(required = false) String state,
                              @RequestParam(required = false) String year,
                              Model model) {
-        List<Torneo> torneos;
+        List<Tournament> tournaments;
         
-        if (search != null || estado != null || year != null) {
-            torneos = torneoService.findByFilters(search, estado, year);
+        if (search != null || state != null || year != null) {
+            tournaments = tournamentService.findByFilters(search, state, year);
         } else {
-            torneos = torneoService.findAll();
+            tournaments = tournamentService.findAll();
         }
         
-        List<Integer> years = torneoService.getAvailableYears();
+        List<Integer> years = tournamentService.getAvailableYears();
         
-        model.addAttribute("torneos", torneos);
+        model.addAttribute("tournaments", tournaments);
         model.addAttribute("years", years);
-        model.addAttribute("title", "Gestión de Torneos");
-        return "admin/torneos/list";
+        model.addAttribute("title", "Gestión de Tournaments");
+        return "admin/tournaments/list";
     }
 
-    @GetMapping("/torneos/new")
-    public String newTorneo(Model model) {
-        model.addAttribute("torneo", new Torneo());
-        model.addAttribute("estados", Torneo.EstadoTorneo.values());
-        model.addAttribute("title", "Crear Torneo");
-        return "admin/torneos/form";
+    @GetMapping("/tournaments/new")
+    public String newTournament(Model model) {
+        model.addAttribute("tournament", new Tournament());
+        model.addAttribute("states", Tournament.TournamentState.values());
+        model.addAttribute("title", "Crear Tournament");
+        return "admin/tournaments/form";
     }
 
-    @PostMapping("/torneos")
-    public String createTorneo(@Valid Torneo torneo,
+    @PostMapping("/tournaments")
+    public String createTournament(@Valid Tournament tournament,
                               BindingResult result,
                               Model model,
                               RedirectAttributes redirectAttributes) {
         
         if (result.hasErrors()) {
-            model.addAttribute("estados", Torneo.EstadoTorneo.values());
-            model.addAttribute("title", "Crear Torneo");
-            return "admin/torneos/form";
+            model.addAttribute("states", Tournament.TournamentState.values());
+            model.addAttribute("title", "Crear Tournament");
+            return "admin/tournaments/form";
         }
 
         try {
-            torneoService.create(torneo);
-            redirectAttributes.addFlashAttribute("successMessage", "Torneo creado exitosamente");
-            return "redirect:/admin/torneos";
+            tournamentService.create(tournament);
+            redirectAttributes.addFlashAttribute("successMessage", "Tournament creado exitosamente");
+            return "redirect:/admin/tournaments";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error al crear torneo: " + e.getMessage());
-            model.addAttribute("estados", Torneo.EstadoTorneo.values());
-            model.addAttribute("title", "Crear Torneo");
-            return "admin/torneos/form";
+            model.addAttribute("errorMessage", "Error al crear tournament: " + e.getMessage());
+            model.addAttribute("states", Tournament.TournamentState.values());
+            model.addAttribute("title", "Crear Tournament");
+            return "admin/tournaments/form";
         }
     }
 
-    @GetMapping("/torneos/{id}")
-    public String viewTorneo(@PathVariable Long id, Model model) {
-        Optional<Torneo> torneoOpt = torneoService.findById(id);
-        if (torneoOpt.isEmpty()) {
-            return "redirect:/admin/torneos";
+    @GetMapping("/tournaments/{id}")
+    public String viewTournament(@PathVariable Long id, Model model) {
+        Optional<Tournament> tournamentOpt = tournamentService.findById(id);
+        if (tournamentOpt.isEmpty()) {
+            return "redirect:/admin/tournaments";
         }
 
-        model.addAttribute("torneo", torneoOpt.get());
-        model.addAttribute("title", "Detalles del Torneo");
-        return "admin/torneos/view";
+        model.addAttribute("tournament", tournamentOpt.get());
+        model.addAttribute("title", "Detalles del Tournament");
+        return "admin/tournaments/view";
     }
 
-    @GetMapping("/torneos/{id}/edit")
-    public String editTorneo(@PathVariable Long id, Model model) {
-        Optional<Torneo> torneoOpt = torneoService.findById(id);
-        if (torneoOpt.isEmpty()) {
-            return "redirect:/admin/torneos";
+    @GetMapping("/tournaments/{id}/edit")
+    public String editTournament(@PathVariable Long id, Model model) {
+        Optional<Tournament> tournamentOpt = tournamentService.findById(id);
+        if (tournamentOpt.isEmpty()) {
+            return "redirect:/admin/tournaments";
         }
 
-        model.addAttribute("torneo", torneoOpt.get());
-        model.addAttribute("title", "Editar Torneo");
-        return "admin/torneos/form"; // Use same form template
+        model.addAttribute("tournament", tournamentOpt.get());
+        model.addAttribute("title", "Editar Tournament");
+        return "admin/tournaments/form"; // Use same form template
     }
 
-    @PostMapping("/torneos/{id}")
-    public String updateTorneo(@PathVariable Long id,
-                              @Valid Torneo torneo,
+    @PostMapping("/tournaments/{id}")
+    public String updateTournament(@PathVariable Long id,
+                              @Valid Tournament tournament,
                               BindingResult result,
                               Model model,
                               RedirectAttributes redirectAttributes) {
         
         if (result.hasErrors()) {
-            model.addAttribute("estados", Torneo.EstadoTorneo.values());
-            model.addAttribute("title", "Editar Torneo");
-            return "admin/torneos/edit";
+            model.addAttribute("states", Tournament.TournamentState.values());
+            model.addAttribute("title", "Editar Tournament");
+            return "admin/tournaments/edit";
         }
 
         try {
-            torneoService.update(id, torneo);
-            redirectAttributes.addFlashAttribute("successMessage", "Torneo actualizado exitosamente");
-            return "redirect:/admin/torneos";
+            tournamentService.update(id, tournament);
+            redirectAttributes.addFlashAttribute("successMessage", "Tournament actualizado exitosamente");
+            return "redirect:/admin/tournaments";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error al actualizar torneo: " + e.getMessage());
-            model.addAttribute("estados", Torneo.EstadoTorneo.values());
-            model.addAttribute("title", "Editar Torneo");
-            return "admin/torneos/edit";
+            model.addAttribute("errorMessage", "Error al actualizar tournament: " + e.getMessage());
+            model.addAttribute("states", Tournament.TournamentState.values());
+            model.addAttribute("title", "Editar Tournament");
+            return "admin/tournaments/edit";
         }
     }
 
-    @PostMapping("/torneos/{id}/toggle-status")
+    @PostMapping("/tournaments/{id}/toggle-status")
     @ResponseBody
-    public ResponseEntity<?> toggleTorneoStatus(@PathVariable Long id) {
+    public ResponseEntity<?> toggleTournamentStatus(@PathVariable Long id) {
         try {
-            torneoService.toggleStatus(id);
+            tournamentService.toggleStatus(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al actualizar estado: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al actualizar state: " + e.getMessage());
         }
     }
 
-    @DeleteMapping("/torneos/{id}")
+    @DeleteMapping("/tournaments/{id}")
     @ResponseBody
-    public ResponseEntity<?> deleteTorneo(@PathVariable Long id) {
+    public ResponseEntity<?> deleteTournament(@PathVariable Long id) {
         try {
-            torneoService.delete(id);
+            tournamentService.delete(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al eliminar torneo: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al eliminar tournament: " + e.getMessage());
         }
     }
 
-    // CRUD Canchas
-    @GetMapping("/canchas")
-    public String listCanchas(@RequestParam(required = false) String search,
-                             @RequestParam(required = false) String activa,
+    // CRUD Courts
+    @GetMapping("/courts")
+    public String listCourts(@RequestParam(required = false) String search,
+                             @RequestParam(required = false) String active,
                              Model model) {
-        List<Cancha> canchas;
+        List<Court> courts;
         
-        if (search != null || activa != null) {
-            canchas = canchaService.findByFilters(search, activa);
+        if (search != null || active != null) {
+            courts = courtService.findByFilters(search, active);
         } else {
-            canchas = canchaService.findAll();
+            courts = courtService.findAll();
         }
         
-        model.addAttribute("canchas", canchas);
-        model.addAttribute("title", "Gestión de Canchas");
-        return "admin/canchas/list";
+        model.addAttribute("courts", courts);
+        model.addAttribute("title", "Gestión de Courts");
+        return "admin/courts/list";
     }
 
-    @GetMapping("/canchas/new")
-    public String newCancha(Model model) {
-        model.addAttribute("cancha", new Cancha());
-        model.addAttribute("title", "Crear Cancha");
-        return "admin/canchas/form";
+    @GetMapping("/courts/new")
+    public String newCourt(Model model) {
+        model.addAttribute("court", new Court());
+        model.addAttribute("title", "Crear Court");
+        return "admin/courts/form";
     }
 
-    @PostMapping("/canchas")
-    public String createCancha(@Valid Cancha cancha,
+    @PostMapping("/courts")
+    public String createCourt(@Valid Court court,
                               BindingResult result,
                               Model model,
                               RedirectAttributes redirectAttributes) {
         
         if (result.hasErrors()) {
-            model.addAttribute("title", "Crear Cancha");
-            return "admin/canchas/form";
+            model.addAttribute("title", "Crear Court");
+            return "admin/courts/form";
         }
 
         try {
-            canchaService.create(cancha);
-            redirectAttributes.addFlashAttribute("successMessage", "Cancha creada exitosamente");
-            return "redirect:/admin/canchas";
+            courtService.create(court);
+            redirectAttributes.addFlashAttribute("successMessage", "Court creada exitosamente");
+            return "redirect:/admin/courts";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error al crear cancha: " + e.getMessage());
-            model.addAttribute("title", "Crear Cancha");
-            return "admin/canchas/form";
+            model.addAttribute("errorMessage", "Error al crear court: " + e.getMessage());
+            model.addAttribute("title", "Crear Court");
+            return "admin/courts/form";
         }
     }
 
-    @GetMapping("/canchas/{id}/edit")
-    public String editCancha(@PathVariable Long id, Model model) {
-        Optional<Cancha> canchaOpt = canchaService.findById(id);
-        if (canchaOpt.isEmpty()) {
-            return "redirect:/admin/canchas";
+    @GetMapping("/courts/{id}/edit")
+    public String editCourt(@PathVariable Long id, Model model) {
+        Optional<Court> courtOpt = courtService.findById(id);
+        if (courtOpt.isEmpty()) {
+            return "redirect:/admin/courts";
         }
 
-        model.addAttribute("cancha", canchaOpt.get());
-        model.addAttribute("title", "Editar Cancha");
-        return "admin/canchas/form"; // Use same form template
+        model.addAttribute("court", courtOpt.get());
+        model.addAttribute("title", "Editar Court");
+        return "admin/courts/form"; // Use same form template
     }
 
-    @PostMapping("/canchas/{id}")
-    public String updateCancha(@PathVariable Long id,
-                              @Valid Cancha cancha,
+    @PostMapping("/courts/{id}")
+    public String updateCourt(@PathVariable Long id,
+                              @Valid Court court,
                               BindingResult result,
                               Model model,
                               RedirectAttributes redirectAttributes) {
         
         if (result.hasErrors()) {
-            model.addAttribute("title", "Editar Cancha");
-            return "admin/canchas/edit";
+            model.addAttribute("title", "Editar Court");
+            return "admin/courts/edit";
         }
 
         try {
-            canchaService.update(id, cancha);
-            redirectAttributes.addFlashAttribute("successMessage", "Cancha actualizada exitosamente");
-            return "redirect:/admin/canchas";
+            courtService.update(id, court);
+            redirectAttributes.addFlashAttribute("successMessage", "Court actualizada exitosamente");
+            return "redirect:/admin/courts";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error al actualizar cancha: " + e.getMessage());
-            model.addAttribute("title", "Editar Cancha");
-            return "admin/canchas/edit";
+            model.addAttribute("errorMessage", "Error al actualizar court: " + e.getMessage());
+            model.addAttribute("title", "Editar Court");
+            return "admin/courts/edit";
         }
     }
 
-    @PostMapping("/canchas/{id}/toggle-status")
+    @PostMapping("/courts/{id}/toggle-status")
     @ResponseBody
-    public ResponseEntity<?> toggleCanchaStatus(@PathVariable Long id) {
+    public ResponseEntity<?> toggleCourtStatus(@PathVariable Long id) {
         try {
-            canchaService.toggleStatus(id);
+            courtService.toggleStatus(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al actualizar estado: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al actualizar state: " + e.getMessage());
         }
     }
 }

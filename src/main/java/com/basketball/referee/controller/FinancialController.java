@@ -1,8 +1,8 @@
 package com.basketball.referee.controller;
 
-import com.basketball.referee.entity.*;
+import com.basketball.referee.model.*;
 import com.basketball.referee.service.*;
-import com.basketball.referee.service.LiquidacionService.LiquidacionData;
+import com.basketball.referee.service.SettlementService.SettlementData;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,19 +23,19 @@ import java.math.BigDecimal;
 public class FinancialController {
 
     @Autowired
-    private TarifaService tarifaService;
+    private FeeService feeService;
 
     @Autowired
-    private LiquidacionService liquidacionService;
+    private SettlementService settlementService;
 
 //  @Autowired
 //  private PdfService pdfService;
 
     @Autowired
-    private TorneoService torneoService;
+    private TournamentService tournamentService;
 
     @Autowired
-    private ArbitroService arbitroService;
+    private RefereeService refereeService;
 
     // Dashboard
     @GetMapping("/dashboard")
@@ -44,122 +44,122 @@ public class FinancialController {
         return "admin/financial/dashboard";
     }
 
-    // Tarifas CRUD
-    @GetMapping("/tarifas")
-    public String listTarifas(@RequestParam(required = false) String search,
-                             @RequestParam(required = false) String torneo,
-                             @RequestParam(required = false) String escalafon,
+    // Fees CRUD
+    @GetMapping("/fees")
+    public String listFees(@RequestParam(required = false) String search,
+                             @RequestParam(required = false) String tournament,
+                             @RequestParam(required = false) String rank,
                              Model model) {
-        List<Tarifa> tarifas;
+        List<Fee> fees;
         
-        if (search != null || torneo != null || escalafon != null) {
-            tarifas = tarifaService.findByFilters(search, torneo, escalafon);
+        if (search != null || tournament != null || rank != null) {
+            fees = feeService.findByFilters(search, tournament, rank);
         } else {
-            tarifas = tarifaService.findAll();
+            fees = feeService.findAll();
         }
         
-        List<Torneo> torneos = torneoService.findAll();
+        List<Tournament> tournaments = tournamentService.findAll();
         
-        model.addAttribute("tarifas", tarifas);
-        model.addAttribute("torneos", torneos);
-        model.addAttribute("escalafones", Arbitro.Escalafon.values());
-        model.addAttribute("title", "Gestión de Tarifas");
-        return "admin/financial/tarifas/list";
+        model.addAttribute("fees", fees);
+        model.addAttribute("tournaments", tournaments);
+        model.addAttribute("rankes", Referee.Rank.values());
+        model.addAttribute("title", "Gestión de Fees");
+        return "admin/financial/fees/list";
     }
 
-    @GetMapping("/tarifas/new")
-    public String newTarifa(Model model) {
-        model.addAttribute("tarifa", new Tarifa());
-        model.addAttribute("torneos", torneoService.findActive());
-        model.addAttribute("escalafones", Arbitro.Escalafon.values());
-        model.addAttribute("roles", AsignacionPartido.RolArbitro.values());
-        model.addAttribute("title", "Nueva Tarifa");
-        return "admin/financial/tarifas/form";
+    @GetMapping("/fees/new")
+    public String newFee(Model model) {
+        model.addAttribute("fee", new Fee());
+        model.addAttribute("tournaments", tournamentService.findActive());
+        model.addAttribute("rankes", Referee.Rank.values());
+        model.addAttribute("roles", MatchAssignment.RefereeRole.values());
+        model.addAttribute("title", "Nueva Fee");
+        return "admin/financial/fees/form";
     }
 
-    @PostMapping("/tarifas")
-    public String createTarifa(@Valid Tarifa tarifa,@RequestParam BigDecimal montoTorneo,
+    @PostMapping("/fees")
+    public String createFee(@Valid Fee fee,@RequestParam BigDecimal amountTournament,
                               BindingResult result,
                               Model model,
                               RedirectAttributes redirectAttributes) {
         
         if (result.hasErrors()) {
-            model.addAttribute("torneos", torneoService.findActive());
-            model.addAttribute("escalafones", Arbitro.Escalafon.values());
-            model.addAttribute("roles", AsignacionPartido.RolArbitro.values());
-            model.addAttribute("title", "Nueva Tarifa");
-            return "admin/financial/tarifas/form";
+            model.addAttribute("tournaments", tournamentService.findActive());
+            model.addAttribute("rankes", Referee.Rank.values());
+            model.addAttribute("roles", MatchAssignment.RefereeRole.values());
+            model.addAttribute("title", "Nueva Fee");
+            return "admin/financial/fees/form";
         }
 
         try {
-            tarifaService.create(tarifa, montoTorneo);
-            redirectAttributes.addFlashAttribute("successMessage", "Tarifa creada exitosamente");
-            return "redirect:/admin/financial/tarifas";
+            feeService.create(fee, amountTournament);
+            redirectAttributes.addFlashAttribute("successMessage", "Fee creada exitosamente");
+            return "redirect:/admin/financial/fees";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error al crear tarifa: " + e.getMessage());
-            model.addAttribute("torneos", torneoService.findActive());
-            model.addAttribute("escalafones", Arbitro.Escalafon.values());
-            model.addAttribute("roles", AsignacionPartido.RolArbitro.values());
-            model.addAttribute("title", "Nueva Tarifa");
-            return "admin/financial/tarifas/form";
+            model.addAttribute("errorMessage", "Error al crear fee: " + e.getMessage());
+            model.addAttribute("tournaments", tournamentService.findActive());
+            model.addAttribute("rankes", Referee.Rank.values());
+            model.addAttribute("roles", MatchAssignment.RefereeRole.values());
+            model.addAttribute("title", "Nueva Fee");
+            return "admin/financial/fees/form";
         }
     }
 
-    @GetMapping("/tarifas/{id}/edit")
-    public String editTarifa(@PathVariable Long id, Model model) {
-        Optional<Tarifa> tarifaOpt = tarifaService.findById(id);
-        if (tarifaOpt.isEmpty()) {
-            return "redirect:/admin/financial/tarifas";
+    @GetMapping("/fees/{id}/edit")
+    public String editFee(@PathVariable Long id, Model model) {
+        Optional<Fee> feeOpt = feeService.findById(id);
+        if (feeOpt.isEmpty()) {
+            return "redirect:/admin/financial/fees";
         }
 
-        model.addAttribute("tarifa", tarifaOpt.get());
-        model.addAttribute("torneos", torneoService.findActive());
-        model.addAttribute("escalafones", Arbitro.Escalafon.values());
-        model.addAttribute("roles", AsignacionPartido.RolArbitro.values());
-        model.addAttribute("title", "Editar Tarifa");
-        return "admin/financial/tarifas/form";
+        model.addAttribute("fee", feeOpt.get());
+        model.addAttribute("tournaments", tournamentService.findActive());
+        model.addAttribute("rankes", Referee.Rank.values());
+        model.addAttribute("roles", MatchAssignment.RefereeRole.values());
+        model.addAttribute("title", "Editar Fee");
+        return "admin/financial/fees/form";
     }
 
-    @PostMapping("/tarifas/{id}")
-    public String updateTarifa(@PathVariable Long id,
-                              @Valid Tarifa tarifa,
+    @PostMapping("/fees/{id}")
+    public String updateFee(@PathVariable Long id,
+                              @Valid Fee fee,
                               BindingResult result,
                               Model model,
                               RedirectAttributes redirectAttributes) {
         
         if (result.hasErrors()) {
-            model.addAttribute("torneos", torneoService.findActive());
-            model.addAttribute("escalafones", Arbitro.Escalafon.values());
-            model.addAttribute("roles", AsignacionPartido.RolArbitro.values());
-            model.addAttribute("title", "Editar Tarifa");
-            return "admin/financial/tarifas/form";
+            model.addAttribute("tournaments", tournamentService.findActive());
+            model.addAttribute("rankes", Referee.Rank.values());
+            model.addAttribute("roles", MatchAssignment.RefereeRole.values());
+            model.addAttribute("title", "Editar Fee");
+            return "admin/financial/fees/form";
         }
 
         try {
-            tarifaService.update(id, tarifa);
-            redirectAttributes.addFlashAttribute("successMessage", "Tarifa actualizada exitosamente");
-            return "redirect:/admin/financial/tarifas";
+            feeService.update(id, fee);
+            redirectAttributes.addFlashAttribute("successMessage", "Fee actualizada exitosamente");
+            return "redirect:/admin/financial/fees";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Error al actualizar tarifa: " + e.getMessage());
-            model.addAttribute("torneos", torneoService.findActive());
-            model.addAttribute("escalafones", Arbitro.Escalafon.values());
-            model.addAttribute("roles", AsignacionPartido.RolArbitro.values());
-            model.addAttribute("title", "Editar Tarifa");
-            return "admin/financial/tarifas/form";
+            model.addAttribute("errorMessage", "Error al actualizar fee: " + e.getMessage());
+            model.addAttribute("tournaments", tournamentService.findActive());
+            model.addAttribute("rankes", Referee.Rank.values());
+            model.addAttribute("roles", MatchAssignment.RefereeRole.values());
+            model.addAttribute("title", "Editar Fee");
+            return "admin/financial/fees/form";
         }
     }
 
-    // Liquidaciones
-    @GetMapping("/liquidaciones")
-    public String liquidaciones(Model model) {
-        List<Arbitro> arbitros = arbitroService.findAllActive();
-        model.addAttribute("arbitros", arbitros);
-        model.addAttribute("title", "Liquidaciones");
-        return "admin/financial/liquidaciones/index";
+    // Settlements
+    @GetMapping("/settlements")
+    public String settlements(Model model) {
+        List<Referee> referees = refereeService.findAllActive();
+        model.addAttribute("referees", referees);
+        model.addAttribute("title", "Settlements");
+        return "admin/financial/settlements/index";
     }
 
-    @GetMapping("/liquidaciones/arbitro/{arbitroId}")
-    public String liquidacionArbitro(@PathVariable Long arbitroId,
+    @GetMapping("/settlements/referee/{refereeId}")
+    public String settlementReferee(@PathVariable Long refereeId,
                                    @RequestParam(required = false) String month,
                                    @RequestParam(required = false) String year,
                                    Model model) {
@@ -169,17 +169,17 @@ public class FinancialController {
             yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         }
 
-        Optional<Arbitro> arbitroOpt = arbitroService.findById(arbitroId);
-        if (arbitroOpt.isEmpty()) {
-            return "redirect:/admin/financial/liquidaciones";
+        Optional<Referee> refereeOpt = refereeService.findById(refereeId);
+        if (refereeOpt.isEmpty()) {
+            return "redirect:/admin/financial/settlements";
         }
 
-        LiquidacionData liquidacion = liquidacionService.calculateLiquidacion(arbitroId, yearMonth);
+        SettlementData settlement = settlementService.calculateSettlement(refereeId, yearMonth);
         
-        model.addAttribute("arbitro", arbitroOpt.get());
-        model.addAttribute("liquidacion", liquidacion);
+        model.addAttribute("referee", refereeOpt.get());
+        model.addAttribute("settlement", settlement);
         model.addAttribute("yearMonth", yearMonth);
-        model.addAttribute("title", "Liquidación de " + arbitroOpt.get().getUser().getFullName());
-        return "admin/financial/liquidaciones/detail";
+        model.addAttribute("title", "Liquidación de " + refereeOpt.get().getUser().getFullName());
+        return "admin/financial/settlements/detail";
     }
 }

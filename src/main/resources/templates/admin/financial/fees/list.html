@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/base}"
+>
+  <head>
+    <title th:text="${title}">Gestión de Fees</title>
+  </head>
+  <body>
+    <div layout:fragment="content" class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Gestión de Fees</h1>
+        <a th:href="@{/admin/financial/fees/new}" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>Nueva Fee
+        </a>
+      </div>
+
+      <div
+        th:if="${successMessage}"
+        class="alert alert-success"
+        th:text="${successMessage}"
+      ></div>
+      <div
+        th:if="${errorMessage}"
+        class="alert alert-danger"
+        th:text="${errorMessage}"
+      ></div>
+
+      <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Tournament</th>
+                <th>Escalafón</th>
+                <th>Role</th>
+                <th>Amount</th>
+                <th>State</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="fee : ${fees}">
+                <td th:text="${fee.tournament.name}">Tournament</td>
+                <td th:text="${fee.rank}">Escalafón</td>
+                <td th:text="${fee.role}">Role</td>
+                <td
+                  th:text="${#numbers.formatDecimal(fee.amount, 1, 'COMMA', 2, 'POINT')}"
+                ></td>
+                <td>
+                  <span
+                    th:classappend="${fee.active} ? 'badge bg-success' : 'badge bg-secondary'"
+                    th:text="${fee.active ? 'Active' : 'Inactive'}"
+                  ></span>
+                </td>
+                <td>
+                  <a
+                    th:href="@{'/admin/financial/fees/' + ${fee.id} + '/edit'}"
+                    class="btn btn-sm btn-outline-primary"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </a>
+                </td>
+              </tr>
+              <tr th:if="${fees.empty}">
+                <td colspan="6" class="text-center text-muted">
+                  No hay fees registradas
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${tournament.id != null ? 'Editar Tournament' : 'Nuevo Tournament'}">Tournament</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0" th:text="${tournament.id != null ? 'Editar Tournament' : 'Nuevo Tournament'}">Tournament</h1>
+                            <p class="text-muted mb-0">Complete la información del tournament</p>
+                        </div>
+                        <a th:href="@{/admin/tournaments}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/tournaments}" th:object="${tournament}" method="post">
+                                <input type="hidden" th:field="*{id}">
+
+                                <!-- Basic Information -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-trophy me-2"></i>Información Básica
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-12 mb-3">
+                                        <label for="name" class="form-label">Name del Tournament *</label>
+                                        <input type="text" class="form-control" id="name" 
+                                               th:field="*{name}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" 
+                                             th:errors="*{name}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-12 mb-3">
+                                        <label for="description" class="form-label">Descripción</label>
+                                        <textarea class="form-control" id="description" rows="3"
+                                                  th:field="*{description}" 
+                                                  placeholder="Descripción del tournament, categorías, etc."></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Dates and Status -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="fas fa-calendar me-2"></i>Dates y State
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="startDate" class="form-label">Date de Inicio *</label>
+                                        <input type="date" class="form-control" id="startDate" 
+                                               th:field="*{startDate}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('startDate')}" 
+                                             th:errors="*{startDate}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="endDate" class="form-label">Date de Fin *</label>
+                                        <input type="date" class="form-control" id="endDate" 
+                                               th:field="*{endDate}" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('endDate')}" 
+                                             th:errors="*{endDate}"></div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="state" class="form-label">State *</label>
+                                        <select class="form-select" id="state" th:field="*{state}" required>
+                                            <option value="">Seleccione un state</option>
+                                            <option th:each="state : ${T(com.basketball.referee.model.Tournament.TournamentState).values()}"
+                                                    th:value="${state}"
+                                                    th:text="${state.displayName}">
+                                            </option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('state')}" 
+                                             th:errors="*{state}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a th:href="@{/admin/tournaments}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times me-2"></i>Cancelar
+                                            </a>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-save me-2"></i>
+                                                <span th:text="${tournament.id != null ? 'Actualizar' : 'Crear'} + ' Tournament'">Guardar</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        // Validate that end date is after start date
+        document.getElementById('endDate').addEventListener('change', function() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = this.value;
+            
+            if (startDate && endDate && endDate < startDate) {
+                alert('La date de end debe ser posterior a la date de start');
+                this.value = '';
+            }
+        });
+        
+        document.getElementById('startDate').addEventListener('change', function() {
+            const startDate = this.value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (startDate && endDate && endDate < startDate) {
+                alert('La date de end debe ser posterior a la date de start');
+                document.getElementById('endDate').value = '';
+            }
+        });
+    </script>
+</body>
+</html>

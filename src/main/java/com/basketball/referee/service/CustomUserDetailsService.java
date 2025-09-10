@@ -1,7 +1,7 @@
 package com.basketball.referee.service;
 
-import com.basketball.referee.entity.Role;
-import com.basketball.referee.entity.User;
+import com.basketball.referee.model.Role;
+import com.basketball.referee.model.User;
 import com.basketball.referee.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;

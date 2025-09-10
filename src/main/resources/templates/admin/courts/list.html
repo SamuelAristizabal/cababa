@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Gestión de Courts</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Gestión de Courts</h1>
+                            <p class="text-muted mb-0">Administrar courts del sistema</p>
+                        </div>
+                        <a th:href="@{/admin/courts/new}" class="btn btn-success">
+                            <i class="fas fa-map-marker-alt me-2"></i>Nueva Court
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/courts}" method="get" class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="search" class="form-label">Buscar</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           th:value="${param.search}" placeholder="Name o ubicación">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="active" class="form-label">State</label>
+                                    <select class="form-select" id="active" name="active">
+                                        <option value="">Todas</option>
+                                        <option value="true" th:selected="${param.active == 'true'}">Actives</option>
+                                        <option value="false" th:selected="${param.active == 'false'}">Inactives</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-search me-1"></i>Buscar
+                                    </button>
+                                    <a th:href="@{/admin/courts}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courts Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(courts)}" class="text-center py-5">
+                                <i class="fas fa-map-marker-alt text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted mt-3">No se encontraron courts</h5>
+                                <p class="text-muted">No hay courts que coincidan con los criterios de búsqueda.</p>
+                            </div>
+
+                            <div th:if="${!#lists.isEmpty(courts)}" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Ubicación</th>
+                                            <th>State</th>
+                                            <th>Matches</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="court : ${courts}">
+                                            <td th:text="${court.address}">Ubicación</td>
+                                            <td>
+                                                <span th:class="'badge ' + (${court.active} ? 'bg-success' : 'bg-danger')"
+                                                      th:text="${court.active} ? 'Active' : 'Inactive'">
+                                                    State
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary" th:text="${#lists.size(court.matches)}">0</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/courts/{id}(id=${court.id})}" 
+                                                       class="btn btn-sm btn-outline-info" title="Ver">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/courts/{id}/edit(id=${court.id})}" 
+                                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-warning" 
+                                                            th:onclick="'toggleStatus(' + ${court.id} + ')'"
+                                                            th:title="${court.active} ? 'Desactiver' : 'Activer'">
+                                                        <i th:class="'fas ' + (${court.active} ? 'fa-ban' : 'fa-check')"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        function toggleStatus(courtId) {
+            if (confirm('¿Está seguro de cambiar el state de esta court?')) {
+                fetch(`/admin/courts/${courtId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al cambiar el state de la court');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cambiar el state de la court');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

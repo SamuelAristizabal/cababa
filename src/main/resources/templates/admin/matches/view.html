@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Detalles del Match</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Detalles del Match</h1>
+                            <p class="text-muted mb-0">
+                                <span th:text="${match.localTeam} + ' vs ' + ${match.visitorTeam}">Match</span>
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/admin/matches/{id}/edit(id=${match.id})}" 
+                               class="btn btn-outline-primary"
+                               th:if="${match.state.name() == 'PROGRAMMED'}">
+                                <i class="fas fa-edit me-2"></i>Editar
+                            </a>
+                            <a th:href="@{/admin/matches}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Match Information -->
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-basketball-ball me-2"></i>Información del Match
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <strong>Tournament:</strong>
+                                    <span class="badge bg-info ms-2" th:text="${match.tournament.name}">Tournament</span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>State:</strong>
+                                        <span class="badge ms-2"
+                                            th:classappend="${match.state.name() == 'PROGRAMMED' ? ' bg-primary' :
+                                                            (match.state.name() == 'IN_PROGRESS' ? ' bg-warning' :
+                                                            (match.state.name() == 'FINISHED' ? ' bg-success' : ' bg-danger'))}"
+                                            th:text="${match.state.displayName}">
+                                            State
+                                        </span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Date y Hora:</strong>
+                                    <div th:text="${#temporals.format(match.dateHour, 'dd/MM/yyyy HH:mm')}">Date</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Court:</strong>
+                                    <div th:text="${match.court.name}">Court</div>
+                                    <small class="text-muted" th:text="${match.court.address}">Ubicación</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Equipo Local:</strong>
+                                    <div th:text="${match.localTeam}">Local</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Equipo Visitante:</strong>
+                                    <div th:text="${match.visitorTeam}">Visitante</div>
+                                </div>
+                                <div th:if="${match.localResult != null}" class="col-md-12 mb-3">
+                                    <strong>Resultado:</strong>
+                                    <div class="fs-4 text-primary">
+                                        <span th:text="${match.localTeam}">Local</span>
+                                        <span th:text="${match.localResult}">0</span>
+                                        -
+                                        <span th:text="${match.visitorResult}">0</span>
+                                        <span th:text="${match.visitorTeam}">Visitante</span>
+                                    </div>
+                                </div>
+                                <div th:if="${match.observations}" class="col-md-12">
+                                    <strong>Observations:</strong>
+                                    <div th:text="${match.observations}">Observations</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Complete Match Form -->
+                    <div th:if="${match.state.name() == 'IN_PROGRESS'}" class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-flag-checkered me-2"></i>Finalizar Match
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/matches/{id}/complete(id=${match.id})}" method="post" class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="localResult" class="form-label">
+                                        Resultado <span th:text="${match.localTeam}">Local</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="localResult" 
+                                           name="localResult" min="0" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="visitorResult" class="form-label">
+                                        Resultado <span th:text="${match.visitorTeam}">Visitante</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="visitorResult" 
+                                           name="visitorResult" min="0" required>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-flag-checkered me-2"></i>Finalizar Match
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignments -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Árbitros Asignados
+                            </h5>
+                            <!--a th:href="@{/admin/matches/{id}/assign(id=${match.id})}" 
+                               class="btn btn-sm btn-outline-success"
+                               th:if="${match.state.name() == 'PROGRAMMED'}">
+                                <i class="fas fa-user-plus me-1"></i>Asignar
+                            </a-->
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(assignments)}" class="text-center py-3">
+                                <i class="fas fa-user-slash text-muted" style="font-size: 2rem;"></i>
+                                <p class="text-muted mt-2 mb-0">No hay árbitros asignados</p>
+                            </div>
+
+                            <div th:if="${!#lists.isEmpty(assignments)}">
+                                <div th:each="assignment : ${assignments}" class="d-flex align-items-center mb-3 p-2 border rounded">
+                                    <img th:src="${assignment.referee.urlPhoto != null ? assignment.referee.urlPhoto : '/images/default-avatar.png'}" 
+                                         alt="Avatar" class="profile-image-small me-3">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold" th:text="${assignment.referee.user.fullName}">Name</div>
+                                        <div class="text-muted small" th:text="${assignment.role.displayName}">Role</div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="badge"
+                                            th:classappend="${assignment.state.name() == 'PENDING' ? ' status-pending' :
+                                                            assignment.state.name() == 'ACCEPTED'  ? ' status-accepted' :
+                                                            assignment.state.name() == 'REJECTED' ? ' status-rejected' :
+                                                                                                    ' status-completed'}"
+                                            th:text="${assignment.state.displayName}">
+                                            State
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

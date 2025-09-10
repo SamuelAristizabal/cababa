@@ -1,8 +1,8 @@
 package com.basketball.referee.service;
 
-import com.basketball.referee.entity.Arbitro;
-import com.basketball.referee.entity.AsignacionPartido;
-import com.basketball.referee.service.LiquidacionService.LiquidacionData;
+import com.basketball.referee.model.Referee;
+import com.basketball.referee.model.MatchAssignment;
+import com.basketball.referee.service.SettlementService.SettlementData;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +18,18 @@ import java.util.Map;
 public class PdfService {
 
     @Autowired
-    private ArbitroService arbitroService;
+    private RefereeService refereeService;
 
-    public byte[] generateLiquidacionPdf(LiquidacionData liquidacion) throws DocumentException, IOException {
+    public byte[] generateSettlementPdf(SettlementData settlement) throws DocumentException, IOException {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfWriter writer = PdfWriter.getInstance(document, baos);
 
         document.open();
 
-        // Get arbitro information
-        Arbitro arbitro = arbitroService.findById(liquidacion.getArbitroId()).orElse(null);
-        if (arbitro == null) {
+        // Get referee information
+        Referee referee = refereeService.findById(settlement.getRefereeId()).orElse(null);
+        if (referee == null) {
             throw new RuntimeException("Árbitro no encontrado");
         }
 
@@ -44,22 +44,22 @@ public class PdfService {
         title.setSpacingAfter(20);
         document.add(title);
 
-        // Arbitro information
+        // Referee information
         PdfPTable infoTable = new PdfPTable(2);
         infoTable.setWidthPercentage(100);
         infoTable.setSpacingAfter(20);
 
         addCell(infoTable, "Árbitro:", headerFont);
-        addCell(infoTable, arbitro.getUser().getFullName(), normalFont);
+        addCell(infoTable, referee.getUser().getFullName(), normalFont);
         
         addCell(infoTable, "Escalafón:", headerFont);
-        addCell(infoTable, arbitro.getEscalafon().getDisplayName(), normalFont);
+        addCell(infoTable, referee.getRank().getDisplayName(), normalFont);
         
-        addCell(infoTable, "Especialidad:", headerFont);
-        addCell(infoTable, arbitro.getEspecialidad().getDisplayName(), normalFont);
+        addCell(infoTable, "Specialty:", headerFont);
+        addCell(infoTable, referee.getSpecialty().getDisplayName(), normalFont);
         
         addCell(infoTable, "Período:", headerFont);
-        addCell(infoTable, liquidacion.getYearMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")), normalFont);
+        addCell(infoTable, settlement.getYearMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")), normalFont);
 
         document.add(infoTable);
 
@@ -73,18 +73,18 @@ public class PdfService {
         summaryTable.setSpacingAfter(20);
 
         // Headers
-        addCell(summaryTable, "Rol", headerFont);
-        addCell(summaryTable, "Partidos", headerFont);
-        addCell(summaryTable, "Monto", headerFont);
+        addCell(summaryTable, "Role", headerFont);
+        addCell(summaryTable, "Matches", headerFont);
+        addCell(summaryTable, "Amount", headerFont);
 
-        for (Map.Entry<String, Integer> entry : liquidacion.getPartidosPorRol().entrySet()) {
-            String rol = entry.getKey();
-            Integer partidos = entry.getValue();
-            BigDecimal monto = liquidacion.getMontosPorRol().getOrDefault(rol, BigDecimal.ZERO);
+        for (Map.Entry<String, Integer> entry : settlement.getMatchesByRole().entrySet()) {
+            String role = entry.getKey();
+            Integer matches = entry.getValue();
+            BigDecimal amount = settlement.getAmountsByRole().getOrDefault(role, BigDecimal.ZERO);
 
-            addCell(summaryTable, rol, normalFont);
-            addCell(summaryTable, partidos.toString(), normalFont);
-            addCell(summaryTable, "$" + monto.toString(), normalFont);
+            addCell(summaryTable, role, normalFont);
+            addCell(summaryTable, matches.toString(), normalFont);
+            addCell(summaryTable, "$" + amount.toString(), normalFont);
         }
 
         document.add(summaryTable);
@@ -99,26 +99,26 @@ public class PdfService {
         detailTable.setSpacingAfter(20);
 
         // Headers
-        addCell(detailTable, "Fecha", headerFont);
-        addCell(detailTable, "Partido", headerFont);
-        addCell(detailTable, "Torneo", headerFont);
-        addCell(detailTable, "Rol", headerFont);
-        addCell(detailTable, "Monto", headerFont);
+        addCell(detailTable, "Date", headerFont);
+        addCell(detailTable, "Match", headerFont);
+        addCell(detailTable, "Tournament", headerFont);
+        addCell(detailTable, "Role", headerFont);
+        addCell(detailTable, "Amount", headerFont);
 
-        for (AsignacionPartido asignacion : liquidacion.getAsignaciones()) {
-            BigDecimal payment = tarifaService.calculatePayment(asignacion);
+        for (MatchAssignment assignment : settlement.getAssignments()) {
+            BigDecimal payment = feeService.calculatePayment(assignment);
             
-            addCell(detailTable, asignacion.getPartido().getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-            addCell(detailTable, asignacion.getPartido().getEquipoLocal() + " vs " + asignacion.getPartido().getEquipoVisitante(), normalFont);
-            addCell(detailTable, asignacion.getPartido().getTorneo().getNombre(), normalFont);
-            addCell(detailTable, asignacion.getRol().getDisplayName(), normalFont);
+            addCell(detailTable, assignment.getMatch().getDateHour().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
+            addCell(detailTable, assignment.getMatch().getLocalTeam() + " vs " + assignment.getMatch().getVisitorTeam(), normalFont);
+            addCell(detailTable, assignment.getMatch().getTournament().getName(), normalFont);
+            addCell(detailTable, assignment.getRol().getDisplayName(), normalFont);
             addCell(detailTable, "$" + payment.toString(), normalFont);
         }
 
         document.add(detailTable);
 
         // Total
-        Paragraph total = new Paragraph("TOTAL A PAGAR: $" + liquidacion.getTotalAmount().toString(), titleFont);
+        Paragraph total = new Paragraph("TOTAL A PAGAR: $" + settlement.getTotalAmount().toString(), titleFont);
         total.setAlignment(Element.ALIGN_RIGHT);
         total.setSpacingBefore(20);
         document.add(total);
@@ -128,7 +128,7 @@ public class PdfService {
     }
 
     @Autowired
-    private TarifaService tarifaService;
+    private FeeService feeService;
 
     private void addCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Gestión de Árbitros</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-0">Gestión de Árbitros</h1>
+                            <p class="text-muted mb-0">Administrar árbitros del sistema</p>
+                        </div>
+                        <a th:href="@{/admin/referees/new}" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>Nuevo Árbitro
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="@{/admin/referees}" method="get" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="search" class="form-label">Buscar</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           th:value="${param.search}" placeholder="Name o email">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="rank" class="form-label">Escalafón</label>
+                                    <select class="form-select" id="rank" name="rank">
+                                        <option value="">Todos</option>
+                                        <option th:each="rank : ${T(com.basketball.referee.model.Referee.Rank).values()}"
+                                                th:value="${rank}"
+                                                th:text="${rank.displayName}"
+                                                th:selected="${param.rank == rank.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="specialty" class="form-label">Specialty</label>
+                                    <select class="form-select" id="specialty" name="specialty">
+                                        <option value="">Todas</option>
+                                        <option th:each="specialty : ${T(com.basketball.referee.model.Referee.Specialty).values()}"
+                                                th:value="${specialty}"
+                                                th:text="${specialty.displayName}"
+                                                th:selected="${param.specialty == specialty.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="active" class="form-label">State</label>
+                                    <select class="form-select" id="active" name="active">
+                                        <option value="">Todos</option>
+                                        <option value="true" th:selected="${param.active == 'true'}">Actives</option>
+                                        <option value="false" th:selected="${param.active == 'false'}">Inactives</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-search me-1"></i>Buscar
+                                    </button>
+                                    <a th:href="@{/admin/referees}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Limpiar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Referees Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div th:if="${#lists.isEmpty(referees)}" class="text-center py-5">
+                                <i class="fas fa-users text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="text-muted mt-3">No se encontraron árbitros</h5>
+                                <p class="text-muted">No hay árbitros que coincidan con los criterios de búsqueda.</p>
+                            </div>
+
+                            <div th:if="${!#lists.isEmpty(referees)}" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Foto</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Escalafón</th>
+                                            <th>Specialty</th>
+                                            <th>State</th>
+                                            <th>Matches</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="referee : ${referees}">
+                                            <td>
+                                                <img th:src="${referee.urlPhoto != null ? referee.urlPhoto : '/images/default-avatar.png'}" 
+                                                     alt="Avatar" 
+                                                     class="profile-image-small">
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold" th:text="${referee.user.fullName}">Name</div>
+                                                <div class="text-muted small" th:text="${referee.phone}">Teléfono</div>
+                                            </td>
+                                            <td th:text="${referee.user.email}">email@example.com</td>
+                                            <td>
+                                                <span class="badge bg-info" th:text="${referee.rank.displayName}">Escalafón</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary" th:text="${referee.specialty.displayName}">Specialty</span>
+                                            </td>
+                                            <td>
+                                                <span th:class="'badge ' + (${referee.active} ? 'bg-success' : 'bg-danger')"
+                                                      th:text="${referee.active} ? 'Active' : 'Inactive'">
+                                                    State
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a th:href="@{/admin/referees/{id}(id=${referee.id})}" 
+                                                       class="btn btn-sm btn-outline-info" title="Ver">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a th:href="@{/admin/referees/{id}/edit(id=${referee.id})}" 
+                                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-warning" 
+                                                            th:onclick="'toggleStatus(' + ${referee.id} + ')'"
+                                                            th:title="${referee.active} ? 'Desactiver' : 'Activer'">
+                                                        <i th:class="'fas ' + (${referee.active} ? 'fa-ban' : 'fa-check')"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        function toggleStatus(refereeId) {
+            if (confirm('¿Está seguro de cambiar el state de este árbitro?')) {
+                fetch(`/admin/referees/${refereeId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al cambiar el state del árbitro');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cambiar el state del árbitro');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
