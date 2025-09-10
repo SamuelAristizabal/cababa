@@ -1,6 +1,58 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/base}">
+
 <head>
-    <title th:text="${tournament.id != null ? 'Editar Tournament' : 'Nuevo Tournament'}">Tournament</title>
+    <title th:text="${title}">Detalles del Torneo</title>
 </head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container mt-4">
+        <h1 th:text="${title}">Detalles del Torneo</h1>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title" th:text="${tournament.name}">Nombre del torneo</h4>
+                <p class="card-text" th:text="${tournament.description}">Descripción del torneo</p>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Fecha de inicio:</label>
+                        <p th:text="${tournament.startDate}">-</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Fecha de fin:</label>
+                        <p th:text="${tournament.endDate}">-</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Estado:</label>
+                        <p th:text="${tournament.state.displayName}">-</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Activo:</label>
+                        <p th:text="${tournament.active ? 'Sí' : 'No'}">-</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Creado en:</label>
+                        <p th:text="${#temporals.format(tournament.createdAt, 'dd/MM/yyyy HH:mm')}">-</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Última actualización:</label>
+                        <p th:text="${#temporals.format(tournament.updatedAt, 'dd/MM/yyyy HH:mm')}">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a th:href="@{/admin/tournaments}" class="btn btn-secondary mt-3">Volver a la lista</a>
+    </div>
+</div>
+</body>
+</html>

@@ -20,16 +20,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.basketball.referee.model.Referee;
-import com.basketball.referee.model.MatchAssignment;
 import com.basketball.referee.model.Court;
 import com.basketball.referee.model.Match;
+import com.basketball.referee.model.MatchAssignment;
+import com.basketball.referee.model.Referee;
 import com.basketball.referee.model.Tournament;
 import com.basketball.referee.model.User;
-import com.basketball.referee.service.RefereeService;
-import com.basketball.referee.service.MatchAssignmentService;
 import com.basketball.referee.service.CourtService;
+import com.basketball.referee.service.MatchAssignmentService;
 import com.basketball.referee.service.MatchService;
+import com.basketball.referee.service.RefereeService;
 import com.basketball.referee.service.TournamentService;
 import com.basketball.referee.service.UserService;
 
@@ -167,8 +167,11 @@ public class AdminController {
             return "redirect:/admin/referees";
         }
 
-        model.addAttribute("referee", refereeOpt.get());
+        Referee referee = refereeOpt.get();
+        model.addAttribute("referee", referee);
+        model.addAttribute("user", referee.getUser()); 
         model.addAttribute("title", "Detalles del Árbitro");
+
         return "admin/referees/view";
     }
 
